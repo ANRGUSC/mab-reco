@@ -27,3 +27,6 @@
 *.zip
 *.tar.gz
 *.rar
+
+# data log files
+*.txt
