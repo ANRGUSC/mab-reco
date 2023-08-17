@@ -80,7 +80,7 @@ async def suggest(ctx):
       return response.author == ctx.author and response.channel == ctx.channel
 
    # send context message first:
-   message = f"For <{ctx.author.name}>:\n\nWhich of the following scenarios are you in right now:\n"
+   message = f"For <{ctx.author.display_name}>:\n\nWhich of the following scenarios are you in right now:\n"
    for i, context in enumerate(CONTEXTS, start = 1):
       message += f"\n{i}. {context}\n"
    message += "\nType in the chat with the number of your choice."
@@ -94,17 +94,17 @@ async def suggest(ctx):
             if 0 <= context_index < len(CONTEXTS):
                break
             else:
-               await ctx.send(f"For <{ctx.author.name}>:\n\nInvalid context selection. Please enter a valid number.")
+               await ctx.send(f"For <{ctx.author.display_name}>:\n\nInvalid context selection. Please enter a valid number.")
          except ValueError:
-            await ctx.send(f"For <{ctx.author.name}>:\n\nInvalid input. Please enter numbers only.")
+            await ctx.send(f"For <{ctx.author.display_name}>:\n\nInvalid input. Please enter numbers only.")
    except asyncio.TimeoutError:
-      await ctx.send(f"For <{ctx.author.name}>:\n\nuh-oh! Activity was cancelled due to long time no response. See you next time!")
+      await ctx.send(f"For <{ctx.author.display_name}>:\n\nuh-oh! Activity was cancelled due to long time no response. See you next time!")
       return
 
    # send suggestions and wait for user's reaction to suggestion
    # sugg_list contains indices of the suggestions with highest mab scores:
    sugg_list = mab_instance.recommend(RECO_SIZE, context_index, mab_instance.is_first_time(context_index, RECO_SIZE))
-   message = f"For <{ctx.author.name}>:\n\nPlease wait a moment while we fetch your suggestions..."
+   message = f"For <{ctx.author.display_name}>:\n\nPlease wait a moment while we fetch your suggestions..."
    message += "\n\nYay! Here they are. Choose what you want to do most right now.\n"
    for i, sugg_idx in enumerate(sugg_list, start = 1):
       message += f"\n{i}. {SUGGESTIONS[sugg_idx]}\n"
@@ -119,18 +119,18 @@ async def suggest(ctx):
             if 0 <= sugg_idx_temp < len(sugg_list):
                break
             else:
-               await ctx.send(f"For <{ctx.author.name}>:\n\nInvalid activity selection. Please enter a valid number.")
+               await ctx.send(f"For <{ctx.author.display_name}>:\n\nInvalid activity selection. Please enter a valid number.")
          except ValueError:
-            await ctx.send(f"For <{ctx.author.name}>:\n\nInvalid input. Please enter numbers only.")
+            await ctx.send(f"For <{ctx.author.display_name}>:\n\nInvalid input. Please enter numbers only.")
    except asyncio.TimeoutError:
-      await ctx.send(f"For <{ctx.author.name}>:\n\nuh-oh! Activity was cancelled due to long time no response. See you next time!")
+      await ctx.send(f"For <{ctx.author.display_name}>:\n\nuh-oh! Activity was cancelled due to long time no response. See you next time!")
       return
 
    # Get the real suggestion index:
    suggestion_index = sugg_list[sugg_idx_temp]
 
    # send detailed instructions for action and get user feedback:
-   message = f"For <{ctx.author.name}>:\n\nGreat! {SUGG_INSTRUCT_DICT[SUGGESTIONS[suggestion_index]]}"
+   message = f"For <{ctx.author.display_name}>:\n\nGreat! {SUGG_INSTRUCT_DICT[SUGGESTIONS[suggestion_index]]}"
    message += "\n\nTake your time! Once you are done, please provide a feedback from 0 (unhelpful) to 5 (out of this world) so we can better help you next time!"
    await ctx.send(message)
    
@@ -142,14 +142,14 @@ async def suggest(ctx):
             if 0 <= feedback_rating <= 5:
                break
             else:
-               await ctx.send(f"For <{ctx.author.name}>:\n\nInvalid feedback. Please enter a feedback from 0 ~ 5.")
+               await ctx.send(f"For <{ctx.author.display_name}>:\n\nInvalid feedback. Please enter a feedback from 0 ~ 5.")
          except ValueError:
-            await ctx.send(f"For <{ctx.author.name}>:\n\nInvalid input. Please enter numbers only.")
+            await ctx.send(f"For <{ctx.author.display_name}>:\n\nInvalid input. Please enter numbers only.")
    except asyncio.TimeoutError:
-      await ctx.send(f"For <{ctx.author.name}>:\n\nuh-oh! Activity was cancelled due to long time no response. See you next time!")
+      await ctx.send(f"For <{ctx.author.display_name}>:\n\nuh-oh! Activity was cancelled due to long time no response. See you next time!")
       return
    
-   await ctx.send(f"For <{ctx.author.name}>:\n\nExcellent! Hope you feel better after this activity! See you next time!")
+   await ctx.send(f"For <{ctx.author.display_name}>:\n\nExcellent! Hope you feel better after this activity! See you next time!")
 
    # update data & history data file:
    mab_instance.update(feedback_rating, suggestion_index, context_index)
@@ -157,7 +157,7 @@ async def suggest(ctx):
 
    # update activity in both user's own activity history, and the total activity history
    curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-   activity_entry = f"[{curr_time}]\t{ctx.author.name} <{ctx.author.id}>: Context: [{CONTEXTS[context_index]}], Selection: [{SUGGESTIONS[suggestion_index]}], Feedback: [{feedback_rating}].\n"
+   activity_entry = f"[{curr_time}]\t{ctx.author.display_name} <{ctx.author.id}>: Context: [{CONTEXTS[context_index]}], Selection: [{SUGGESTIONS[suggestion_index]}], Feedback: [{feedback_rating}].\n"
    mab_instance.update_activity_log(f"{ctx.author.id}_activity.txt", activity_entry)
    mab_instance.update_activity_log("total_activity.txt", activity_entry)
 
