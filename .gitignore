@@ -30,3 +30,6 @@
 
 # data log files
 *.txt
+
+# python cache files:
+*.pyc

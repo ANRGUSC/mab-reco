@@ -110,5 +110,5 @@ class ContextualMAB:
 
    # update user log history:
    def update_activity_log(self, activity_file, activity_entry):
-      with open(activity_file, "w") as file:
+      with open(activity_file, "a") as file:
          file.write(activity_entry)

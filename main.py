@@ -80,9 +80,9 @@ async def suggest(ctx):
       return response.author == ctx.author and response.channel == ctx.channel
 
    # send context message first:
-   message = f"For <{ctx.author.name}>:\n\nWhich of the following scenarios are you in right now: "
+   message = f"For <{ctx.author.name}>:\n\nWhich of the following scenarios are you in right now:\n"
    for i, context in enumerate(CONTEXTS, start = 1):
-      message += f"\n{i}. {context}"
+      message += f"\n{i}. {context}\n"
    message += "\nType in the chat with the number of your choice."
    await ctx.send(message)
    
@@ -100,20 +100,19 @@ async def suggest(ctx):
    except asyncio.TimeoutError:
       await ctx.send(f"For <{ctx.author.name}>:\n\nuh-oh! Activity was cancelled due to long time no response. See you next time!")
       return
-   
-   await ctx.send(f"For <{ctx.author.name}>:\n\nPlease wait a moment while we fetch your suggestions...")
 
    # send suggestions and wait for user's reaction to suggestion
    # sugg_list contains indices of the suggestions with highest mab scores:
    sugg_list = mab_instance.recommend(RECO_SIZE, context_index, mab_instance.is_first_time(context_index, RECO_SIZE))
-   message = "Please type in the chat with the number of your choice:"
+   message = f"For <{ctx.author.name}>:\n\nPlease wait a moment while we fetch your suggestions..."
+   message += "\n\nYay! Here they are. Choose what you want to do most right now.\n"
    for i, sugg_idx in enumerate(sugg_list, start = 1):
-      message += f"\n{i}. {SUGGESTIONS[sugg_idx]}"
+      message += f"\n{i}. {SUGGESTIONS[sugg_idx]}\n"
    await ctx.send(message)
    
    try:
       while True:
-         suggestion_response = await bot.wait_for('message', check=check, timeout=60)
+         suggestion_response = await bot.wait_for('message', check=check, timeout=300)
          try: 
             # this index is a temporary index in the sugg_list, we need to get the actual index later for the picked suggestion in SUGGESTIONS:
             sugg_idx_temp = int(suggestion_response.content) - 1
@@ -130,11 +129,9 @@ async def suggest(ctx):
    # Get the real suggestion index:
    suggestion_index = sugg_list[sugg_idx_temp]
 
-   # send detailed instructions for action:
-   await ctx.send(f"For <{ctx.author.name}>:\n\nGreat! {SUGG_INSTRUCT_DICT[SUGGESTIONS[suggestion_index]]}")
-
-   # get user feedback for this activity:
-   message = f"For <{ctx.author.name}>:\n\nTake your time! Once you are done, please provide a feedback from 0 (unhelpful) to 5 (out of this world) so we can better help you next time!"
+   # send detailed instructions for action and get user feedback:
+   message = f"For <{ctx.author.name}>:\n\nGreat! {SUGG_INSTRUCT_DICT[SUGGESTIONS[suggestion_index]]}"
+   message += "\n\nTake your time! Once you are done, please provide a feedback from 0 (unhelpful) to 5 (out of this world) so we can better help you next time!"
    await ctx.send(message)
    
    try:
