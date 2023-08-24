@@ -22,23 +22,35 @@ class ContextualMAB:
          self.read_hist_file(history_data_file)
 
    # Recommend the top rec_size suggestions based on given context:
-   def recommend(self, rec_size, context_index, first_time):
+   # IMPORTANT: make sure the rec_size <= suggestions for the given context_index - avoid_indices size
+   def recommend(self, rec_size, context_index, first_time, avoid_indices=None):
       # records all mab scores for the given context for different suggestions
       context_mab_scores = self.mab_scores[:, context_index]
       # rec_size <= self.num_suggestions (gives an array of indices of size rec_size with largest ucb_score):
       if first_time:
-         return np.random.choice(len(context_mab_scores), size=rec_size, replace=False)
+         if avoid_indices is None or len(avoid_indices) == 0:
+            return np.random.choice(len(context_mab_scores), size=rec_size, replace=False)
+         else: 
+            valid_indices = [i for i in range(len(context_mab_scores)) if i not in avoid_indices]
+            return np.random.choice(valid_indices, size=rec_size, replace=False)
       else:
-         return np.argsort(context_mab_scores)[-rec_size:][::-1]
+         if avoid_indices is None or len(avoid_indices) == 0:
+            return np.argsort(context_mab_scores)[-rec_size:][::-1]
+         else:
+            sorted_indices = np.argsort(context_mab_scores)
+            reco_indices = [idx for idx in sorted_indices if idx not in avoid_indices][-rec_size:][::-1]
+            return reco_indices
 
    # This is called when the user has made a choice for one of the suggestions:
-   def update(self, feedback_score, suggestion_index, context_index):
+   def update(self, feedback_score, suggestion_index, context_index, output_file):
       # Suppose the feedback_score is in the range from 0 - 5: 0 implies no selection/unhelpful, where as 5 implies extremely helpful
       self.rewards[suggestion_index][context_index] = self.rewards[suggestion_index][context_index] + feedback_score
       self.total_selections += 1
       self.selections[suggestion_index][context_index] += 1
       # update mab score:
       self.update_mab_score(suggestion_index, context_index)
+      # update the data file:
+      self.write_hist_file(output_file)
 
    # Update the mab_score (exploitation + exploration):
    def update_mab_score(self, suggestion_index, context_index):
