@@ -1,0 +1,70 @@
+# how many recommendations to give
+recommendation_size: 5
+
+contexts:
+- At Work
+- During Commute
+- Study Sessions
+- During Breaks
+- Before Bed
+- During Trave
+
+suggestions:
+- Deep Breathing
+- Quick Walk
+- Listen to Music
+- Stretching
+- Mini Meditation
+- Hug a Pillow
+- Count Your Blessings
+- Savor a Snack
+- Memory Lane
+- Drink Something
+
+sugg_dict:
+  Deep Breathing:
+    description: Take slow, deep breaths. Inhale for a count of 4, hold for 4, exhale for 4. Repeat a few times.
+    img_file_name: Deep Breathing.png
+  Quick Walk:
+    description: Step outside for a short walk around your surroundings. Breathe in fresh air and observe your surroundings.
+    img_file_name: Quick Walk.png
+  Listen to Music:
+    description: Put on a favorite calming song or instrumental music and immerse yourself in the sound.
+    img_file_name: Listen to Music.png
+  Stretching:
+    description: Do a few simple stretches to loosen tense muscles, like touching your toes or rolling your shoulders.
+    img_file_name: Stretching.png
+  Mini Meditation:
+    description: Find a quiet spot, close your eyes, and concentrate on your breath or a peaceful image for a few minutes.
+    img_file_name: Mini Meditation.png
+  Hug a Pillow:
+    description: Hug a pillow tightly for a comforting sensation and to release tension.
+    img_file_name: Hug a Pillow.png
+  Count Your Blessings:
+    description: List three things that went well today and why.
+    img_file_name: Count Your Blessings.png
+  Savor a Snack:
+    description: Grab a small, delicious snack, you deserve it.
+    img_file_name: Savor a Snack.png
+  Memory Lane:
+    description: Reminisce about positive memories to evoke happy feelings.
+    img_file_name: Memory Lane.png
+  Drink Something:
+    description: Drink some water or whatever you like.
+    img_file_name: Drink Something.png
+
+# for all contexts, this records which suggestions to avoid
+avoid_indices:
+- [5]
+- [1, 4, 5]
+- [5]
+- [5]
+- [1, 7, 9]
+- [1, 5]
+
+# folder names for files:
+user_activity_folder_name: user_activities
+mab_data_folder_name: mab_data
+image_folder_name: images
+history_mab_data_file_name: history_data.txt
+history_activity_file_name: history_activity.txt
