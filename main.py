@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import asyncio
 import os
 from dotenv import load_dotenv
@@ -69,6 +69,32 @@ async def on_member_join(member):
 # /suggest command:
 @bot.command()
 async def suggest(ctx):
+   # create thread for the user:
+   curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+   thread = await ctx.channel.create_thread(
+      name = f"{curr_time}: Recommendation channel for <{ctx.author.display_name}>",
+      auto_archive_duration = 60 * 24 * 3
+   )
+
+   # add user:
+   await thread.add_user(ctx.author)
+
+   # Tells the user where to start the recommendation process:
+   await ctx.send(f"For <{ctx.author.display_name}>: Click here to have your customized recommendation {thread.mention}")
+
+   # send initial suggestions message:
+   message = "Which of the following scenarios are you in right now:\n"
+   for i, context in enumerate(CONTEXTS, start = 1):
+      message += f"\n{i}. {context}\n"
+   message += "\nType in the chat with the number of your choice."
+   await thread.send(message)
+
+   # start the thread:
+   suggestion_thread_loop.start(ctx.author, thread)
+
+# suggest thread loop:
+@tasks.loop(seconds=1)
+async def suggestion_thread_loop(user, thread):
    # check if this the first time:
    if os.path.exists(HISTORY_DATA_FILE):
       mab_instance = ContextualMAB(len(SUGGESTIONS), len(CONTEXTS), 2, HISTORY_DATA_FILE)
@@ -77,15 +103,9 @@ async def suggest(ctx):
 
    # check user's response:
    def check(response):
-      return response.author == ctx.author and response.channel == ctx.channel
+      return response.author == user and response.channel == thread and not thread.locked and not thread.archived
 
-   # send context message first:
-   message = f"For <{ctx.author.display_name}>:\n\nWhich of the following scenarios are you in right now:\n"
-   for i, context in enumerate(CONTEXTS, start = 1):
-      message += f"\n{i}. {context}\n"
-   message += "\nType in the chat with the number of your choice."
-   await ctx.send(message)
-   
+   # get context response from user:
    try:
       while True:
          context_response = await bot.wait_for('message', check=check, timeout=300) 
@@ -94,22 +114,24 @@ async def suggest(ctx):
             if 0 <= context_index < len(CONTEXTS):
                break
             else:
-               await ctx.send(f"For <{ctx.author.display_name}>:\n\nInvalid context selection. Please enter a valid number.")
+               await thread.send("Invalid context selection. Please enter a valid number.")
          except ValueError:
-            await ctx.send(f"For <{ctx.author.display_name}>:\n\nInvalid input. Please enter numbers only.")
+            await thread.send("Invalid input. Please enter numbers only.")
    except asyncio.TimeoutError:
-      await ctx.send(f"For <{ctx.author.display_name}>:\n\nuh-oh! Activity was cancelled due to long time no response. See you next time!")
+      await thread.send("uh-oh! Activity was cancelled due to long time no response. See you next time!")
+      suggestion_thread_loop.cancel()
       return
 
    # send suggestions and wait for user's reaction to suggestion
    # sugg_list contains indices of the suggestions with highest mab scores:
    sugg_list = mab_instance.recommend(RECO_SIZE, context_index, mab_instance.is_first_time(context_index, RECO_SIZE))
-   message = f"For <{ctx.author.display_name}>:\n\nPlease wait a moment while we fetch your suggestions..."
+   message = "Please wait a moment while we fetch your suggestions..."
    message += "\n\nYay! Here they are. Choose what you want to do most right now.\n"
    for i, sugg_idx in enumerate(sugg_list, start = 1):
       message += f"\n{i}. {SUGGESTIONS[sugg_idx]}\n"
-   await ctx.send(message)
+   await thread.send(message)
    
+   # get user response for recommendations:
    try:
       while True:
          suggestion_response = await bot.wait_for('message', check=check, timeout=300)
@@ -119,20 +141,21 @@ async def suggest(ctx):
             if 0 <= sugg_idx_temp < len(sugg_list):
                break
             else:
-               await ctx.send(f"For <{ctx.author.display_name}>:\n\nInvalid activity selection. Please enter a valid number.")
+               await thread.send("Invalid activity selection. Please enter a valid number.")
          except ValueError:
-            await ctx.send(f"For <{ctx.author.display_name}>:\n\nInvalid input. Please enter numbers only.")
+            await thread.send("Invalid input. Please enter numbers only.")
    except asyncio.TimeoutError:
-      await ctx.send(f"For <{ctx.author.display_name}>:\n\nuh-oh! Activity was cancelled due to long time no response. See you next time!")
+      await thread.send("uh-oh! Activity was cancelled due to long time no response. See you next time!")
+      suggestion_thread_loop.cancel() 
       return
 
    # Get the real suggestion index:
    suggestion_index = sugg_list[sugg_idx_temp]
 
    # send detailed instructions for action and get user feedback:
-   message = f"For <{ctx.author.display_name}>:\n\nGreat! {SUGG_INSTRUCT_DICT[SUGGESTIONS[suggestion_index]]}"
+   message = f"Great! {SUGG_INSTRUCT_DICT[SUGGESTIONS[suggestion_index]]}"
    message += "\n\nTake your time! Once you are done, please provide a feedback from 0 (unhelpful) to 5 (out of this world) so we can better help you next time!"
-   await ctx.send(message)
+   await thread.send(message)
    
    try:
       while True:
@@ -142,23 +165,28 @@ async def suggest(ctx):
             if 0 <= feedback_rating <= 5:
                break
             else:
-               await ctx.send(f"For <{ctx.author.display_name}>:\n\nInvalid feedback. Please enter a feedback from 0 ~ 5.")
+               await thread.send("Invalid feedback. Please enter a feedback from 0 ~ 5.")
          except ValueError:
-            await ctx.send(f"For <{ctx.author.display_name}>:\n\nInvalid input. Please enter numbers only.")
+            await thread.send("Invalid input. Please enter numbers only.")
    except asyncio.TimeoutError:
-      await ctx.send(f"For <{ctx.author.display_name}>:\n\nuh-oh! Activity was cancelled due to long time no response. See you next time!")
+      await thread.send("uh-oh! Activity was cancelled due to long time no response. See you next time!")
+      suggestion_thread_loop.cancel()
       return
-   
-   await ctx.send(f"For <{ctx.author.display_name}>:\n\nExcellent! Hope you feel better after this activity! See you next time!")
+
+   # Last bot message for this thread:
+   await thread.send("Excellent! Hope you feel better after this activity! See you next time!")
+
+   # stop looping:
+   suggestion_thread_loop.cancel()
 
    # update data & history data file:
    mab_instance.update(feedback_rating, suggestion_index, context_index)
    mab_instance.write_hist_file(HISTORY_DATA_FILE)
 
    # update activity in both user's own activity history, and the total activity history
-   curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-   activity_entry = f"[{curr_time}]\t{ctx.author.display_name} <{ctx.author.id}>: Context: [{CONTEXTS[context_index]}], Selection: [{SUGGESTIONS[suggestion_index]}], Feedback: [{feedback_rating}].\n"
-   mab_instance.update_activity_log(f"{ctx.author.id}_activity.txt", activity_entry)
+   curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+   activity_entry = f"[{curr_time}]\t<{user.id}>---<{CONTEXTS[context_index]}>---<{SUGGESTIONS[suggestion_index]}>---<{feedback_rating}>\n"
+   mab_instance.update_activity_log(f"{user.id}_activity.txt", activity_entry)
    mab_instance.update_activity_log("total_activity.txt", activity_entry)
 
 # Run the bot:
