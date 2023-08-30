@@ -1,5 +1,5 @@
 # how many recommendations to give
-recommendation_size: 5
+recommendation_size: 3
 
 contexts:
 - At Work
@@ -7,7 +7,7 @@ contexts:
 - Study Sessions
 - During Breaks
 - Before Bed
-- During Trave
+- During Travel
 
 suggestions:
 - Deep Breathing
@@ -68,3 +68,8 @@ mab_data_folder_name: mab_data
 image_folder_name: images
 history_mab_data_file_name: history_data.txt
 history_activity_file_name: history_activity.txt
+
+# modify the non-selected suggestions:
+modify_non_selected: true
+threshold_num: 10
+auxiliary_rewards: 0.5

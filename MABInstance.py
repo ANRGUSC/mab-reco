@@ -1,6 +1,7 @@
 # This is the MAB class object implemented with the Upper Confidence Bound Algorithm.
 import os
 import yaml
+import numpy as np
 from ContextualMAB import ContextualMAB
 
 # Read from yaml file, get data:
@@ -12,6 +13,11 @@ contexts = data["contexts"]
 suggestions = data["suggestions"]
 sugg_dict = data["sugg_dict"]
 avoid_indices = data["avoid_indices"]
+
+# check to say if we need modify the non-selected suggestions:
+modify_non_selected = data["modify_non_selected"]
+threshold_num = data["threshold_num"]
+auxiliary_rewards = data["auxiliary_rewards"]
 
 # Name file paths:
 user_activity_folder_path = os.path.join(os.getcwd(), data["user_activity_folder_name"])
@@ -29,8 +35,6 @@ if not os.path.exists(mab_data_folder_path):
 if not os.path.exists(image_folder_path):
    os.mkdir(image_folder_path)
 
-# print(f"{user_activity_folder_path}\n\n{mab_data_folder_path}\n\n{image_folder_path}")
-
 class MABInstance:
    def __init__(self, user_hash, personalization):
       self.user_hash = user_hash
@@ -47,13 +51,26 @@ class MABInstance:
       self.image_folder_path = image_folder_path
       
       if os.path.exists(self.history_data_file):
-         self.general_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, self.history_data_file)
+         if modify_non_selected:
+            self.general_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, self.history_data_file, threshold_num, auxiliary_rewards)
+         else:
+            self.general_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, self.history_data_file)
       else:
-         self.general_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2)
+         if modify_non_selected:
+            self.general_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, threshold_num=threshold_num, non_selected_rewards=auxiliary_rewards)
+         else:
+            self.general_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2)
+      
       if os.path.exists(self.user_data_file):
-         self.user_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, self.user_data_file)
+         if modify_non_selected:
+            self.user_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, self.user_data_file, threshold_num, auxiliary_rewards)
+         else:
+            self.user_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, self.user_data_file)
       else:
-         self.user_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2)
+         if modify_non_selected:
+            self.user_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, threshold_num=threshold_num, non_selected_rewards=auxiliary_rewards)
+         else:
+            self.user_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2)
 
    # Returns the contexts:
    def get_contexts(self):
@@ -64,14 +81,18 @@ class MABInstance:
       return suggestions
 
    # Returns suggestion based on given context:
-   def make_recommendation(self, context_idx):
+   def make_recommendation(self, context_idx, prev_sugg_indices=None):
       ctx_avoid_indices = avoid_indices[context_idx]
+      if prev_sugg_indices is not None:
+         ctx_avoid_indices = np.unique(np.concatenate((ctx_avoid_indices, prev_sugg_indices)).astype(int))
+
       if self.personalization:
          sugg_indices = self.user_mab_instance.recommend(reco_size, context_idx, self.user_mab_instance.is_first_time(context_idx, reco_size), ctx_avoid_indices)
       else:
          sugg_indices = self.general_mab_instance.recommend(reco_size, context_idx, self.general_mab_instance.is_first_time(context_idx, reco_size), ctx_avoid_indices)
       
-      sugg_list = [suggestions[idx] for idx in sugg_indices] 
+      sugg_list = [suggestions[idx] for idx in sugg_indices]
+      
       return sugg_list
 
    # Returns the suggestion index:
@@ -88,10 +109,21 @@ class MABInstance:
       return os.path.join(self.image_folder_path, sugg_dict[suggestion]['img_file_name'])
    
    # Update mab scores: 
-   def update_mab_file(self, context_idx, suggestion_idx, feedback):
-      self.general_mab_instance.update(feedback, suggestion_idx, context_idx, self.history_data_file)
-      self.user_mab_instance.update(feedback, suggestion_idx, context_idx, self.user_data_file)
-
+   # suggestion_idx = -1 & feedback = -1 if all suggestions are not selected by the user (user doesn't like all of them):
+   def update_mab_file(self, context_idx, suggestion_idx, feedback, suggestion_idx_list):
+      if modify_non_selected:
+         for i in range(len(suggestion_idx_list)):
+            if suggestion_idx_list[i] == suggestion_idx:
+               self.general_mab_instance.update(feedback, suggestion_idx, context_idx, self.history_data_file)
+               self.user_mab_instance.update(feedback, suggestion_idx, context_idx, self.user_data_file)
+            else:
+               self.general_mab_instance.update(feedback, suggestion_idx_list[i], context_idx, self.history_data_file, False)
+               self.user_mab_instance.update(feedback, suggestion_idx_list[i], context_idx, self.user_data_file, False)
+      else:
+         if suggestion_idx != -1 and feedback != -1:
+            self.general_mab_instance.update(feedback, suggestion_idx, context_idx, self.history_data_file)
+            self.user_mab_instance.update(feedback, suggestion_idx, context_idx, self.user_data_file)
+         
    # Update activity log:
    def update_activity_log(self, curr_time, context_idx, suggestion_idx, feedback):
       activity_entry = f"[{curr_time}]\t<{self.user_hash}>---<{contexts[context_idx]}>---<{suggestions[suggestion_idx]}>---<{feedback}>\n"
