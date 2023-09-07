@@ -176,7 +176,7 @@ async def suggestion_thread_loop(user, thread, mab_instance):
       await thread.send("Excellent! Hope you feel better after this activity! See you next time!")
 
       # update activity in both user's own activity history, and the total activity history
-      curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+      curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
       mab_instance.update_activity_log(curr_time, context_index, suggestion_index, feedback_rating)
 
    # stop looping:

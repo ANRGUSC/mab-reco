@@ -1,6 +1,8 @@
 # This is the MAB class object implemented with the Upper Confidence Bound Algorithm.
 
 import numpy as np
+import json
+import os
 
 class ContextualMAB:
    # By default, we won't modify the non-selected suggestions after the "threshold_num" total selections, just omit the last two parameters.
@@ -142,5 +144,19 @@ class ContextualMAB:
 
    # update user log history:
    def update_activity_log(self, activity_file, activity_entry):
-      with open(activity_file, "a") as file:
-         file.write(activity_entry)
+      # check if the activity json file exists:
+      if os.path.exists(activity_file):
+         with open(activity_file, 'r') as json_file:
+            data = json.load(json_file)
+      else:
+         data = []
+
+      # append new data to data:
+      data.append(activity_entry)
+
+      # format JSON:
+      json_data = json.dumps(data, indent=3)
+
+      # write into json file:
+      with open(activity_file, "w") as json_file:
+         json_file.write(json_data)

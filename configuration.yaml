@@ -67,7 +67,7 @@ user_activity_folder_name: user_activities
 mab_data_folder_name: mab_data
 image_folder_name: images
 history_mab_data_file_name: history_data.txt
-history_activity_file_name: history_activity.txt
+history_activity_file_name: history_activity.json
 
 # modify the non-selected suggestions:
 modify_non_selected: true    # this can be set as "true" or "false", turn on or off the feature of modifying the non-selected suggestions rewards

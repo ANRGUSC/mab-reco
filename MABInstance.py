@@ -2,6 +2,7 @@
 import os
 import yaml
 import numpy as np
+import json
 from ContextualMAB import ContextualMAB
 
 # Read from yaml file, get data:
@@ -55,7 +56,7 @@ class MABInstance:
       
       # activity log files:
       self.history_activity_file = os.path.join(user_activity_folder_path, history_activity_file_name)
-      self.user_activity_file = os.path.join(platform_activity_folder_path, f"{self.platform}_{self.user_hash}_activity.txt")
+      self.user_activity_file = os.path.join(platform_activity_folder_path, f"{self.platform}_{self.user_hash}_activity.json")
 
       self.image_folder_path = image_folder_path
       
@@ -135,8 +136,20 @@ class MABInstance:
          
    # Update activity log:
    def update_activity_log(self, curr_time, context_idx, suggestion_idx, feedback):
-      # in the total history log, we add the platform to identity the activity belongs to which application
-      general_activity_entry = f"[{curr_time}]\t<{self.platform}>---<{self.user_hash}>---<{contexts[context_idx]}>---<{suggestions[suggestion_idx]}>---<{feedback}>\n"
-      user_activity_entry = f"[{curr_time}]\t<{self.user_hash}>---<{contexts[context_idx]}>---<{suggestions[suggestion_idx]}>---<{feedback}>\n"
+      # format json entry
+      general_activity_entry = {
+         "timestamp": curr_time,
+         "platform": self.platform,
+         "user_hash": self.user_hash,
+         "context": contexts[context_idx],
+         "recommendation": suggestions[suggestion_idx],
+         "feedback": feedback
+      }
+      user_activity_entry = {
+         "timestamp": curr_time,
+         "context": contexts[context_idx],
+         "recommendation": suggestions[suggestion_idx],
+         "feedback": feedback
+      }
       self.general_mab_instance.update_activity_log(self.history_activity_file, general_activity_entry)
       self.user_mab_instance.update_activity_log(self.user_activity_file, user_activity_entry)   
