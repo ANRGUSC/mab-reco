@@ -49,14 +49,14 @@ class MABInstance:
          os.mkdir(platform_mab_folder_path)
       if not os.path.exists(platform_activity_folder_path):
          os.mkdir(platform_activity_folder_path)
-
+ 
       # mab data files:
       self.history_data_file = os.path.join(mab_data_folder_path, history_data_file_name)
-      self.user_data_file = os.path.join(platform_mab_folder_path, f"{self.platform}_{self.user_hash}_mab.txt")
+      self.user_data_file = os.path.join(platform_mab_folder_path, f"{self.user_hash}_mab.txt")
       
       # activity log files:
       self.history_activity_file = os.path.join(user_activity_folder_path, history_activity_file_name)
-      self.user_activity_file = os.path.join(platform_activity_folder_path, f"{self.platform}_{self.user_hash}_activity.json")
+      self.user_activity_file = os.path.join(platform_activity_folder_path, f"{self.user_hash}_activity.json")
 
       self.image_folder_path = image_folder_path
       
@@ -121,6 +121,18 @@ class MABInstance:
    # Update mab scores: 
    # suggestion_idx = -1 & feedback = -1 if all suggestions are not selected by the user (user doesn't like all of them):
    def update_mab_file(self, context_idx, suggestion_idx, feedback, suggestion_idx_list):
+      # re-create mab instances due to concurrency to avoid any issues:
+      if os.path.exists(self.history_data_file):
+         if modify_non_selected:
+            self.general_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, self.history_data_file, threshold_num, auxiliary_rewards)
+         else:
+            self.general_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, self.history_data_file)
+      if os.path.exists(self.user_data_file):
+         if modify_non_selected:
+            self.user_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, self.user_data_file, threshold_num, auxiliary_rewards)
+         else:
+            self.user_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, self.user_data_file)
+
       if modify_non_selected:
          for i in range(len(suggestion_idx_list)):
             if suggestion_idx_list[i] == suggestion_idx:
@@ -137,7 +149,7 @@ class MABInstance:
    # Update activity log:
    def update_activity_log(self, curr_time, context_idx, suggestion_idx, feedback):
       # format json entry
-      general_activity_entry = {
+      activity_entry = {
          "timestamp": curr_time,
          "platform": self.platform,
          "user_hash": self.user_hash,
@@ -145,11 +157,5 @@ class MABInstance:
          "recommendation": suggestions[suggestion_idx],
          "feedback": feedback
       }
-      user_activity_entry = {
-         "timestamp": curr_time,
-         "context": contexts[context_idx],
-         "recommendation": suggestions[suggestion_idx],
-         "feedback": feedback
-      }
-      self.general_mab_instance.update_activity_log(self.history_activity_file, general_activity_entry)
-      self.user_mab_instance.update_activity_log(self.user_activity_file, user_activity_entry)   
+      self.general_mab_instance.update_activity_log(self.history_activity_file, activity_entry)
+      self.user_mab_instance.update_activity_log(self.user_activity_file, activity_entry)
