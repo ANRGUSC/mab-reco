@@ -34,7 +34,7 @@ async def on_member_join(member):
 @bot.command()
 async def suggest(ctx):
    # create mab instance:
-   mab_instance = MABInstance(ctx.author.id, True)
+   mab_instance = MABInstance(ctx.author.id, True, "discord")
 
    # get contexts:
    contexts = mab_instance.get_contexts()

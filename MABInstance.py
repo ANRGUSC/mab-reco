@@ -36,17 +36,26 @@ if not os.path.exists(image_folder_path):
    os.mkdir(image_folder_path)
 
 class MABInstance:
-   def __init__(self, user_hash, personalization):
+   def __init__(self, user_hash, personalization, platform):
       self.user_hash = user_hash
       self.personalization = personalization
+      self.platform = platform
       
+      # define platform data and activity folders:
+      platform_mab_folder_path = os.path.join(mab_data_folder_path, platform)
+      platform_activity_folder_path = os.path.join(user_activity_folder_path, platform)
+      if not os.path.exists(platform_mab_folder_path):
+         os.mkdir(platform_mab_folder_path)
+      if not os.path.exists(platform_activity_folder_path):
+         os.mkdir(platform_activity_folder_path)
+
       # mab data files:
       self.history_data_file = os.path.join(mab_data_folder_path, history_data_file_name)
-      self.user_data_file = os.path.join(mab_data_folder_path, f"discord_{user_hash}_mab.txt")
+      self.user_data_file = os.path.join(platform_mab_folder_path, f"{self.platform}_{self.user_hash}_mab.txt")
       
       # activity log files:
       self.history_activity_file = os.path.join(user_activity_folder_path, history_activity_file_name)
-      self.user_activity_file = os.path.join(user_activity_folder_path, f"discord_{user_hash}_activity.txt")
+      self.user_activity_file = os.path.join(platform_activity_folder_path, f"{self.platform}_{self.user_hash}_activity.txt")
 
       self.image_folder_path = image_folder_path
       
@@ -126,6 +135,8 @@ class MABInstance:
          
    # Update activity log:
    def update_activity_log(self, curr_time, context_idx, suggestion_idx, feedback):
-      activity_entry = f"[{curr_time}]\t<{self.user_hash}>---<{contexts[context_idx]}>---<{suggestions[suggestion_idx]}>---<{feedback}>\n"
-      self.general_mab_instance.update_activity_log(self.history_activity_file, activity_entry)
-      self.user_mab_instance.update_activity_log(self.user_activity_file, activity_entry)   
+      # in the total history log, we add the platform to identity the activity belongs to which application
+      general_activity_entry = f"[{curr_time}]\t<{self.platform}>---<{self.user_hash}>---<{contexts[context_idx]}>---<{suggestions[suggestion_idx]}>---<{feedback}>\n"
+      user_activity_entry = f"[{curr_time}]\t<{self.user_hash}>---<{contexts[context_idx]}>---<{suggestions[suggestion_idx]}>---<{feedback}>\n"
+      self.general_mab_instance.update_activity_log(self.history_activity_file, general_activity_entry)
+      self.user_mab_instance.update_activity_log(self.user_activity_file, user_activity_entry)   
