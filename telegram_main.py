@@ -1,9 +1,10 @@
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler, filters, CallbackContext, ContextTypes
 import os
 from dotenv import load_dotenv
 import datetime
 import numpy as np
+import asyncio
 from MABInstance import MABInstance
 
 # Get bot token:
@@ -13,48 +14,208 @@ BOT_USERNAME = os.getenv("TELEGRAM_BOT_USERNAME")
 
 # /start command
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-   await update.message.reply_text("Hello! I am your stress relief assistant.")
+   await update.message.reply_text("Hello! I am your stress relief assistant. Let's get started!")
 
 # /help command
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-   await update.message.reply_text("Please type \"suggest for me to provide with you stress relief activities :D")
+   await update.message.reply_text("Please type /suggest for me to provide with you stress relief activities :D")
 
-async def suggest_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-   await update.message.reply_text("Please type \"suggest for me to provide with you stress relief activities :D")
+# ---------------------------------------------------------------------------------------------------------------------------
+# /suggest command
+# define states
+SELECT_CONTEXT, SELECT_SUGGESTION, COLLECT_FEEDBACK = range(3)
 
-# Responses
-def handle_response(text):
-   text = text.lower()
-   if 'hello' in text:
-      return "Hello!"
+# start /suggest command
+async def start_suggestion(update: Update, context: CallbackContext):
+   user = update.message.from_user
+   user_hash_code = user.id
 
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-   message_type = update.message.chat.type
-   text = update.message.text
-   print(f'User {update.message.chat.id} in {message_type}: {text}')
+   # initialize mab instance:
+   mab_instance = MABInstance(user_hash_code, True, "telegram")
+   context.user_data['mab_instance'] = mab_instance
 
-   if message_type == 'group':
-      if BOT_USERNAME in text:
-         new_text = text.replace(BOT_USERNAME, '').strip()
-         response = handle_response(new_text)
-   else:
-      response = handle_response(new_text)
+   # get context and send message:
+   contexts = mab_instance.get_contexts()
+   message = f"Hello, {user.first_name}! Which of the following scenarios are you in right now:\n"
+   for i, context in enumerate(contexts, start = 1):
+      message += f"\n{i}. {context}\n"
+   message += "\nType in the chat with the number of your choice."
+   await update.message.reply_text(message)
 
-   await update.message.reply_text(response)
+   return SELECT_CONTEXT
+
+# /suggest command: get context offer first list suggestions
+async def select_context(update: Update, context: CallbackContext) -> int:
+   # get mab instance
+   mab_instance = context.user_data['mab_instance']
+   contexts = mab_instance.get_contexts()
    
+   # get context:
+   context_response = update.message.text.strip()
+   try:
+      context_index = int(context_response) - 1
+      if context_index < 0 or context_index >= len(contexts):
+         raise ValueError()
+   except ValueError:
+      await update.message.reply_text(f"Invalid context selection. Please enter a valid context from 1 ~ {len(contexts)}.")
+      return SELECT_CONTEXT
 
-if __name__ == '__main__':
-   print("Running...")
+   # offer first list of suggestions: (suppose for first round, there is always some suggestions)
+   suggestions = mab_instance.get_suggestions()
+   sugg_list = mab_instance.make_recommendation(context_index)
+   prev_sugg_indices = np.where(np.isin(suggestions, sugg_list))[0] # suggestion indices
+   message = "Please wait a moment while we fetch your suggestions..."
+   message += "\n\nYay! Here they are. Choose what you want to do most right now.\n\nIf you don't like any of the recommendations, simply reply 0.\n"
+   for i, sugg in enumerate(sugg_list, start = 1):
+      message += f"\n{i}. {sugg}\n"
+   await update.message.reply_text(message)
+
+   # store information for next state:
+   context.user_data['context_index'] = context_index
+   context.user_data['prev_sugg_indices'] = prev_sugg_indices
+   context.user_data['sugg_list'] = sugg_list
+
+   return SELECT_SUGGESTION
+
+# /suggest command: get suggestion:
+async def select_suggestion(update: Update, context: CallbackContext) -> int:
+   # get user response:
+   suggestion_response = update.message.text.strip()
+
+   # get info:
+   mab_instance = context.user_data['mab_instance']
+   context_index = context.user_data['context_index']
+   prev_sugg_indices = context.user_data['prev_sugg_indices']
+   suggestions = mab_instance.get_suggestions()
+
+   # check if this is the first round of suggestion
+   first_round = context.user_data.get('first_round', True) 
+   # checks whether last time the user input was invalid strings or a valid int value, first time always as False:
+   invalid_response = context.user_data.get('invalid_response', False)
+
+   # start suggestion process:
+   if first_round:
+      sugg_list = context.user_data['sugg_list']
+   else:
+      sugg_list = mab_instance.make_recommendation(context_index, prev_sugg_indices)
+      context.user_data['sugg_list'] = sugg_list
+   
+   # if no more suggestions left, we end in here:
+   if len(sugg_list) == 0:
+      await update.message.reply_text("Oops... Looks like you didn't like all the activities we just gave you.\n\nWe will add more options, please come back next time!")
+      feedback_rating = -1
+      suggestion_index = -1
+      mab_instance.update_mab_file(context_index, suggestion_index, feedback_rating, prev_sugg_indices)
+      return ConversationHandler.END
+
+   if not first_round and not invalid_response:
+      message = "Don't worry! Let's try this again, One moment please..."
+      message += "\n\nYay! Here they are. Choose what you want to do most right now.\n\nIf you don't like any of the recommendations, simply reply 0.\n"
+      for i, sugg in enumerate(sugg_list, start = 1):
+         message += f"\n{i}. {sugg}\n"
+      await update.message.reply_text(message)
+      sugg_indices = np.where(np.isin(suggestions, sugg_list))[0]
+      prev_sugg_indices = np.unique(np.concatenate((prev_sugg_indices, sugg_indices)).astype(int))
+
+   # check user response:
+   try:
+      sugg_idx = int(suggestion_response) - 1
+      if sugg_idx < 0 or sugg_idx >= len(sugg_list):
+         raise ValueError()
+      else:
+         context.user_data['invalid_response'] = False
+   except ValueError:
+      if suggestion_response.isdigit() and sugg_idx == -1:
+         context.user_data['prev_sugg_indices'] = prev_sugg_indices
+         context.user_data['invalid_response'] = False
+         context.user_data['first_round'] = False
+      else:
+         await update.message.reply_text(f"Invalid suggestion selection. Please enter a valid suggestion from 0 ~ {len(sugg_list)}.")
+         context.user_data['invalid_response'] = True
+      return SELECT_SUGGESTION
+
+   # after a valid suggestion is picked, we get in here, get real suggestion index:
+   suggestion_index = mab_instance.get_suggestion_index(sugg_list[sugg_idx])
+
+   # store and update data:
+   context.user_data['suggestion_index'] = suggestion_index
+   context.user_data['prev_sugg_indices'] = prev_sugg_indices
+      
+   # gives suggestion detail and image:
+   await update.message.reply_photo(photo=mab_instance.get_suggestion_Image(suggestion_index))
+   message = f"Great! {mab_instance.get_suggestion_description(suggestion_index)}"
+   message += "\n\nTake your time! Once you are done, please provide a feedback from 0 (unhelpful) to 5 (out of this world) so we can better help you next time!"
+   await update.message.reply_text(message)
+
+   print(f'Suggestion: {suggestions[suggestion_index]}')
+   # return COLLECT_FEEDBACK
+   return ConversationHandler.END
+
+# /suggest command: offer suggestion details and get feedback and update
+async def collect_feedback(update: Update, context: CallbackContext) -> int:
+   mab_instance = context.user_data['mab_instance']
+   context_index = context.user_data['context_index']
+   suggestion_index = context.user_data['suggestion_index']
+   prev_sugg_indices = context.user_data['prev_sugg_indices']
+   
+   feedback_response = update.message.text.strip()
+   try:
+      feedback_rating = int(feedback_response)
+      if feedback_rating < 0 or feedback_rating > 5:
+         raise ValueError()        
+   except ValueError:
+      await update.message.reply_text("Invalid feedback. Please enter a feedback from 0 ~ 5.")
+      return COLLECT_FEEDBACK
+   
+   # last message:
+   await update.message.reply_text("Excellent! Hope you feel better after this activity! See you next time!")
+   
+   # update activity in both user's own activity history, and the total activity history
+   curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+   mab_instance.update_activity_log(curr_time, context_index, suggestion_index, feedback_rating)
+   
+   # update mab data files:
+   mab_instance.update_mab_file(context_index, suggestion_index, feedback_rating, prev_sugg_indices)
+
+   # end command:
+   return ConversationHandler.END
+# ---------------------------------------------------------------------------------------------------------------------------
+
+# cancel suggest command:
+async def cancel(update: Update, context: CallbackContext) -> int:
+   await update.message.reply_text("/suggest command terminated. See you next time!")
+   return ConversationHandler.END
+
+# error handler:
+async def error_handler(update: Update, context: CallbackContext):
+   print(f'Update {update} caused error {context.error}')
+   await update.message.reply_text("An error occurred while processing your request. Please try again later.")
+
+# MAIN
+def main():
    app = Application.builder().token(BOT_TOKEN).build()
 
-   # Commands
+   # commands
    app.add_handler(CommandHandler('start', start_command))
    app.add_handler(CommandHandler('help', help_command))
-   app.add_handler(CommandHandler('suggest', suggest_command))
 
-   # Messages
-   app.add_error_handler(MessageHandler(filters.TEXT, handle_message))
+   # create a conversation handler for /suggest command:
+   suggest_conversation_handler = ConversationHandler(
+      entry_points=[CommandHandler('suggest', start_suggestion)],
+      states={
+         SELECT_CONTEXT: [MessageHandler(filters.TEXT & ~ filters.COMMAND, select_context)],
+         SELECT_SUGGESTION: [MessageHandler(filters.TEXT & ~ filters.COMMAND, select_suggestion)],
+         COLLECT_FEEDBACK: [MessageHandler(filters.TEXT & ~ filters.COMMAND, collect_feedback)]
+      },
+      fallbacks=[CommandHandler('cancel', cancel)]
+   )
+   app.add_handler(suggest_conversation_handler)
 
-   # Polls the bot
-   print("Polling...")
-   app.run_polling(poll_interval=1)
+   # add the error handler:
+   app.add_error_handler(error_handler)
+
+   # start it:
+   app.run_polling(poll_interval=0.1)
+
+if __name__ == '__main__':
+   main()
