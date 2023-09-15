@@ -11,6 +11,12 @@ from MABInstance import MABInstance
 load_dotenv()
 BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 
+# Set thread section and interaction timeout duration:
+thread_section_duration = 60 * 24         # (mins * days)
+context_section_duration = 900            # in seconds, e.g. 15 minutes
+suggestion_section_duration = 900         # in seconds, e.g. 15 minutes
+feedback_section_duration = 3600          # in seconds, e.g. 60 minutes
+
 # Enable the message_content intent
 intents = discord.Intents.all()
 
@@ -50,7 +56,7 @@ async def suggestion_thread_loop(ctx, task):
    curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
    thread = await ctx.channel.create_thread(
       name = f"{curr_time}: Recommendation channel for <{ctx.author.display_name}>",
-      auto_archive_duration = 60 * 24
+      auto_archive_duration = thread_section_duration
    )
    
    # add user:
@@ -78,7 +84,7 @@ async def suggestion_thread_loop(ctx, task):
    # get context response from user:
    try:
       while True:
-         context_response = await bot.wait_for('message', check=check, timeout=900) 
+         context_response = await bot.wait_for('message', check=check, timeout=context_section_duration) 
          try:
             context_index = int(context_response.content) - 1
             if 0 <= context_index < len(contexts):
@@ -125,7 +131,7 @@ async def suggestion_thread_loop(ctx, task):
       # get user response for recommendations:
       try:
          while True:
-            suggestion_response = await bot.wait_for('message', check=check, timeout=900)
+            suggestion_response = await bot.wait_for('message', check=check, timeout=suggestion_section_duration)
             try: 
                sugg_idx = int(suggestion_response.content) - 1
                if -1 <= sugg_idx < len(sugg_list):
@@ -161,7 +167,7 @@ async def suggestion_thread_loop(ctx, task):
    
       try:
          while True:
-            feedback_response = await bot.wait_for('message', check=check, timeout=3600)
+            feedback_response = await bot.wait_for('message', check=check, timeout=feedback_section_duration)
             try:
                feedback_rating = int(feedback_response.content)
                if 0 <= feedback_rating <= 5:
