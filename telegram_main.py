@@ -14,11 +14,11 @@ BOT_USERNAME = os.getenv("TELEGRAM_BOT_USERNAME")
 
 # /start command
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-   await update.message.reply_text("Hello! I am your stress relief assistant. Let's get started!")
+   await update.message.reply_text('Hello! I am your stress relief assistant.\n\nType "/" to see what command options you have.\n\nType "/help" to view more.')
 
 # /help command
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-   await update.message.reply_text("Please type /suggest for me to provide with you stress relief activities :D")
+   await update.message.reply_text('Type "/suggest" for me to provide with you stress relief activities.\n\nType "/cancel" to terminate the current suggestion process.')
 
 # ---------------------------------------------------------------------------------------------------------------------------
 # /suggest command
