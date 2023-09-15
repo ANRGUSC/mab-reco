@@ -12,7 +12,7 @@ load_dotenv()
 BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 
 # Set thread section and interaction timeout duration:
-thread_section_duration = 60 * 24         # (mins * days)
+thread_section_duration = 60 * 24         # (mins & hours) e.g. 24 hours, 1 day
 context_section_duration = 900            # in seconds, e.g. 15 minutes
 suggestion_section_duration = 900         # in seconds, e.g. 15 minutes
 feedback_section_duration = 3600          # in seconds, e.g. 60 minutes
