@@ -4,7 +4,6 @@ import os
 from dotenv import load_dotenv
 import datetime
 import numpy as np
-import asyncio
 from MABInstance import MABInstance
 
 # Get bot token:

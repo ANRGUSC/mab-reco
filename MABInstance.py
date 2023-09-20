@@ -2,7 +2,6 @@
 import os
 import yaml
 import numpy as np
-import json
 from ContextualMAB import ContextualMAB
 
 # Read from yaml file, get data:
