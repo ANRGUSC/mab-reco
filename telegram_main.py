@@ -35,7 +35,7 @@ async def start_suggestion(update: Update, context: CallbackContext):
 
    # get context and send message:
    contexts = mab_instance.get_contexts()
-   message = f"Hello, {user.first_name}! Which of the following scenarios are you in right now:\n"
+   message = f"Hello, {user.first_name}! Which of the following scenario are you in right now:\n"
    for i, context in enumerate(contexts, start = 1):
       message += f"\n{i}. {context}\n"
    message += "\nType in the chat with the number of your choice."
