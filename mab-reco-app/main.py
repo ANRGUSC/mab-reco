@@ -306,7 +306,7 @@ def main(page: ft.Page):
                      fit=ft.ImageFit.CONTAIN,
                      width=300,
                      height=300,
-                     border_radius=ft.border_radius.all(20)
+                     border_radius=20
                   ),
                   ft.Container(
                      content=ft.Text(
