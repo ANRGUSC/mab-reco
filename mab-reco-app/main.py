@@ -3,21 +3,82 @@ import datetime
 import numpy as np
 import hashlib
 from MABInstance import MABInstance
+from flet.auth.providers import GitHubOAuthProvider
+from dotenv import load_dotenv
+import os
+
+# Get client ID and client secret:
+load_dotenv()
+GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
+GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
+
+# declare global variable:
+mab_instance = None
+contexts = None
+suggestions = None
 
 # The main function to start the app:
 def main(page: ft.Page):
-   # add oauth for user login and design user hash code in here:
-   user_id = "2190310"
+   # page configurations, center content, hide scrollbar, etc.
+   page.title = "Stree Relief Recommendation"
+   page.vertical_alignment = ft.MainAxisAlignment.CENTER
+   page.horizontal_alignment = ft.MainAxisAlignment.CENTER
+   page.bgcolor = ft.colors.BROWN_100
+   page.scroll = ft.ScrollMode.HIDDEN
+   page.padding = 20
 
-   # Create a hash object (SHA-512)
-   hash_object = hashlib.sha256()
-   hash_object.update(user_id.encode())
-   user_hash = hash_object.hexdigest()
+   # enable user login:
+   provider = GitHubOAuthProvider(
+      client_id=GITHUB_CLIENT_ID,
+      client_secret=GITHUB_CLIENT_SECRET,
+      redirect_url="http://localhost:3000/api/oauth/redirect",
+   )
 
-   # declear mab instance:
-   mab_instance = MABInstance(user_hash, True, 'pwa')
-   contexts = mab_instance.get_contexts()
-   suggestions = mab_instance.get_suggestions()
+   # when login in button is clicked:
+   def login_click(e):
+      page.login(provider)
+
+   # upon login:
+   def on_login(e):
+      global mab_instance, contexts, suggestions
+      if not e.error:
+         user_id = page.auth.user.id
+         print(user_id)
+         # print("User ID:", page.auth.user.id)
+         # Create a hash object (SHA-512)
+         hash_object = hashlib.sha256()
+         hash_object.update(user_id.encode())
+         user_hash = hash_object.hexdigest()
+         # Update mab_instance with user hash:
+         while mab_instance is None:
+            print("Wait")
+            mab_instance = MABInstance(user_hash, True, 'pwa')
+         contexts = mab_instance.get_contexts()
+         suggestions = mab_instance.get_suggestions()
+         # remove login button, and add context selection:
+         page.controls.pop()
+         page.add(get_context_container())
+         page.update()
+      else:
+         print(e.error)
+
+   # login-button:
+   login_button_container = ft.Container(
+      content=ft.Text('Login with GitHub', size=20, color=ft.colors.BLACK, font_family='Tahoma', text_align='JUSTIFY'),
+      margin=10,
+      padding=10,
+      bgcolor=ft.colors.WHITE30,
+      width=210,
+      height=70,
+      border_radius=20,
+      alignment=ft.alignment.center,
+      ink=True,
+      on_click=lambda e: login_click(e),
+   )
+
+   # add login_button:
+   page.on_login = on_login
+   page.add(login_button_container)
 
    # define controls (widgets):
    # --------------------------------------------------------------------------------------------------------------------
@@ -290,18 +351,6 @@ def main(page: ft.Page):
       page.add(get_context_container())
       page.update()
    # --------------------------------------------------------------------------------------------------------------------
-      
-   # page configurations, center content, hide scrollbar, etc.
-   page.title = "Stree Relief Recommendation"
-   page.vertical_alignment = ft.MainAxisAlignment.CENTER
-   page.horizontal_alignment = ft.MainAxisAlignment.CENTER
-   page.bgcolor = ft.colors.BROWN_100
-   page.scroll = ft.ScrollMode.HIDDEN
-   page.padding = 20
-   
-   # add page containers:
-   page.add(get_context_container())
-   page.update()
 
 # run the app:
-ft.app(target=main, view=ft.WEB_BROWSER)
+ft.app(target=main, port=3000, view=ft.WEB_BROWSER)

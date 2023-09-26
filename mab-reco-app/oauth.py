@@ -1,10 +1,8 @@
 import os
 from dotenv import load_dotenv
-import flet
+import flet as ft
 from flet import ElevatedButton, LoginEvent, Page
 from flet.auth.providers import GitHubOAuthProvider
-import requests
-import json
 
 # Get client ID and client secret:
 load_dotenv()
@@ -27,15 +25,9 @@ def main(page: Page):
     def on_login(e: LoginEvent):
         if not e.error:
             # toggle_login_buttons()
-            print(page.auth.user.id)
-            login_button.visible = False
-            # print(page.auth.token)
-            # print(page.auth.provider)
-            # headers = {"Authorization": "Bearer {}".format(page.auth.token.access_token)}
-            # repos_resp = requests.get("https://api.github.com/user/repos", headers=headers)
-            # user_repos = json.loads(repos_resp.text)
-            # for repo in user_repos:
-            #     print(repo["full_name"])
+            # print(page.auth.user.id)
+            # login_button.visible = False
+            page.redirect('/login?user_id=' + str(page.auth.user.id))
 
     def on_logout(e):
         logout_button.visible = page.auth is not None
@@ -46,4 +38,6 @@ def main(page: Page):
     page.on_logout = on_logout
     page.add(login_button, logout_button)
 
-flet.app(target=main, port=8550, view=flet.WEB_BROWSER)
+    return page
+
+# ft.app(target=main, port=8550, view=ft.WEB_BROWSER)

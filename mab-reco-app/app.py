@@ -8,7 +8,7 @@ def index():
     if 'user_id' in session:
         user_id = session['user_id']
         print(user_id)
-        return main.main(user_id)
+        return main.main()
     else:
         return redirect(url_for('login'))
 
@@ -24,4 +24,4 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=8550, debug=True)
