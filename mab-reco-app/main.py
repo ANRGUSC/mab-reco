@@ -34,9 +34,13 @@ def main(page: ft.Page):
       redirect_url="http://localhost:3000/api/oauth/redirect",
    )
 
-   # when login in button is clicked:
+   # when login button is clicked:
    def login_click(e):
       page.login(provider)
+
+   # when logout in button is clicked:
+   def logout_click(e):
+      page.logout()
 
    # upon login:
    def on_login(e):
@@ -61,23 +65,46 @@ def main(page: ft.Page):
          page.update()
       else:
          print(e.error)
+   
+   # upon logout:
+   def on_logout(e):
+      page.controls.pop()
+      page.add(login_button_container)
+      page.update()
 
    # login-button:
    login_button_container = ft.Container(
-      content=ft.Text('Login with GitHub', size=20, color=ft.colors.BLACK, font_family='Tahoma', text_align='JUSTIFY'),
+      content=ft.Container(
+         content=ft.Text('Login with GitHub', size=20, color=ft.colors.BLACK, font_family='Tahoma', text_align='CENTER'),
+         margin=10,
+         padding=10,
+         bgcolor=ft.colors.WHITE30,
+         width=210,
+         height=70,
+         border_radius=20,
+         alignment=ft.alignment.center,
+         ink=True,
+         on_click=lambda e: login_click(e),
+      ),
+      alignment=ft.alignment.center,
+      margin=30,
+      padding=30
+   )
+
+   # Logout button:
+   logout_button_container = ft.Container(
+      content=ft.Text('Logout', size=17, color=ft.colors.BLACK, font_family='Tahoma', text_align='CENTER'),
       margin=10,
       padding=10,
-      bgcolor=ft.colors.WHITE30,
-      width=210,
-      height=70,
-      border_radius=20,
-      alignment=ft.alignment.center,
+      bgcolor=ft.colors.BROWN_100,
+      alignment=ft.alignment.bottom_center,
       ink=True,
-      on_click=lambda e: login_click(e),
+      on_click=lambda e: logout_click(e),
    )
 
    # add login_button:
    page.on_login = on_login
+   page.on_logout = on_logout
    page.add(login_button_container)
 
    # define controls (widgets):
@@ -113,7 +140,8 @@ def main(page: ft.Page):
                   content= ft.Column(
                      context_options
                   ),
-               )
+               ),
+               logout_button_container,
             ],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -176,7 +204,8 @@ def main(page: ft.Page):
                      alignment=ft.alignment.bottom_center,
                      ink=True,
                      on_click=lambda e: restart_suggestion(e),
-                  )
+                  ),
+                  logout_button_container,
                ],
                alignment=ft.MainAxisAlignment.CENTER,
                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -252,6 +281,7 @@ def main(page: ft.Page):
                      ink=True,
                      on_click=lambda e: restart_suggestion(e),
                   ),
+                  logout_button_container,
                ],
                alignment=ft.MainAxisAlignment.CENTER,
                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -292,7 +322,19 @@ def main(page: ft.Page):
                   alignment=ft.alignment.center,
                   ink=True,
                   on_click=lambda e: restart_suggestion(e),
-               )
+               ),
+               ft.Container(
+                  content=ft.Text('Logout', size=18, color=ft.colors.BLACK, font_family='Tahoma', text_align='CENTER'),
+                  margin=10,
+                  padding=10,
+                  bgcolor=ft.colors.WHITE30,
+                  width=210,
+                  height=70,
+                  border_radius=20,
+                  alignment=ft.alignment.center,
+                  ink=True,
+                  on_click=lambda e: logout_click(e),
+               ),
             ],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
