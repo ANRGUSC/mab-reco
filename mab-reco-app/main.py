@@ -43,7 +43,7 @@ def main(page: ft.Page):
       global mab_instance, contexts, suggestions
       if not e.error:
          user_id = page.auth.user.id
-         print(user_id)
+         # print(user_id)
          # print("User ID:", page.auth.user.id)
          # Create a hash object (SHA-512)
          hash_object = hashlib.sha256()
@@ -51,7 +51,7 @@ def main(page: ft.Page):
          user_hash = hash_object.hexdigest()
          # Update mab_instance with user hash:
          while mab_instance is None:
-            print("Wait")
+            # print("Wait")
             mab_instance = MABInstance(user_hash, True, 'pwa')
          contexts = mab_instance.get_contexts()
          suggestions = mab_instance.get_suggestions()
