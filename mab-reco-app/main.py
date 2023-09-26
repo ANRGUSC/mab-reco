@@ -12,11 +12,6 @@ load_dotenv()
 GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
 
-# declare global variable:
-mab_instance = None
-contexts = None
-suggestions = None
-
 # The main function to start the app:
 def main(page: ft.Page):
    # page configurations, center content, hide scrollbar, etc.
@@ -44,27 +39,20 @@ def main(page: ft.Page):
 
    # upon login:
    def on_login(e):
-      global mab_instance, contexts, suggestions
+      # global mab_instance, contexts, suggestions
       if not e.error:
          user_id = page.auth.user.id
-         # print(user_id)
-         # print("User ID:", page.auth.user.id)
+         print("User ID:", page.auth.user.id)
          # Create a hash object (SHA-512)
          hash_object = hashlib.sha256()
          hash_object.update(user_id.encode())
          user_hash = hash_object.hexdigest()
          # Update mab_instance with user hash:
-         while mab_instance is None:
-            # print("Wait")
-            mab_instance = MABInstance(user_hash, True, 'pwa')
-         contexts = mab_instance.get_contexts()
-         suggestions = mab_instance.get_suggestions()
+         mab_instance = MABInstance(user_hash, True, 'pwa')
          # remove login button, and add context selection:
          page.controls.pop()
-         page.add(get_context_container())
+         page.add(get_context_container(mab_instance))
          page.update()
-      else:
-         print(e.error)
    
    # upon logout:
    def on_logout(e):
@@ -110,7 +98,8 @@ def main(page: ft.Page):
    # define controls (widgets):
    # --------------------------------------------------------------------------------------------------------------------
    # contexts container:
-   def get_context_container():
+   def get_context_container(mab_instance):
+      contexts = mab_instance.get_contexts()
       context_options = [
          ft.Container(
             content=ft.Text(f'{context}', size=20, color=ft.colors.BLACK, font_family='Tahoma', text_align='JUSTIFY'),
@@ -122,7 +111,7 @@ def main(page: ft.Page):
             border_radius=20,
             alignment=ft.alignment.center,
             ink=True,
-            on_click=lambda e, context=context: select_context(e, context),
+            on_click=lambda e, context=context, mab_instance=mab_instance: select_context(e, context, mab_instance),
          ) for context in contexts
       ]
       # the contexts selection container:
@@ -153,7 +142,8 @@ def main(page: ft.Page):
       return context_container
 
    # updates and get suggestion_container:
-   def get_suggestion_container(context_index, prev_sugg_indices):
+   def get_suggestion_container(context_index, prev_sugg_indices, mab_instance):
+      suggestions = mab_instance.get_suggestions()
       # get suggestion list:
       sugg_list = mab_instance.make_recommendation(context_index, prev_sugg_indices)
       # if sugg_list is empty:
@@ -177,7 +167,11 @@ def main(page: ft.Page):
                border_radius=20,
                alignment=ft.alignment.center,
                ink=True,
-               on_click=lambda e, suggestion=suggestion, context_index=context_index, prev_sugg_indices=prev_sugg_indices: select_suggestion(e, suggestion, context_index, prev_sugg_indices),
+               on_click=lambda e, 
+                  suggestion=suggestion, 
+                  context_index=context_index, 
+                  prev_sugg_indices=prev_sugg_indices,
+                  mab_instance=mab_instance: select_suggestion(e, suggestion, context_index, prev_sugg_indices, mab_instance),
             ) for suggestion in sugg_list
          ]
          # the contexts selection container:
@@ -203,7 +197,7 @@ def main(page: ft.Page):
                      bgcolor=ft.colors.BROWN_100,
                      alignment=ft.alignment.bottom_center,
                      ink=True,
-                     on_click=lambda e: restart_suggestion(e),
+                     on_click=lambda e, mab_instance=mab_instance: restart_suggestion(e, mab_instance),
                   ),
                   logout_button_container,
                ],
@@ -219,13 +213,13 @@ def main(page: ft.Page):
          return suggestion_container
    
    # get feedback container:
-   def get_feedback_container(context_index, suggestion_index, prev_sugg_indices):
+   def get_feedback_container(context_index, suggestion_index, prev_sugg_indices, mab_instance):
       if suggestion_index == -1:
          feedback = -1
          # update data & history data file:
          mab_instance.update_mab_file(context_index, suggestion_index, feedback, prev_sugg_indices)
          # show a short message and restart button:
-         return get_ending_container(feedback)
+         return get_ending_container(feedback, mab_instance)
       else:
          # show suggestion image and description:
          suggestions = mab_instance.get_suggestions()
@@ -265,7 +259,8 @@ def main(page: ft.Page):
                                  context_index=context_index, 
                                  suggestion_index=suggestion_index, 
                                  feedback=feedback, 
-                                 prev_sugg_indices=prev_sugg_indices: select_feedback(e, context_index, suggestion_index, feedback, prev_sugg_indices),
+                                 prev_sugg_indices=prev_sugg_indices,
+                                 mab_instance=mab_instance: select_feedback(e, context_index, suggestion_index, feedback, prev_sugg_indices, mab_instance),
                            ) for feedback in range(6)
                         ],
                         alignment=ft.MainAxisAlignment.CENTER,
@@ -279,7 +274,7 @@ def main(page: ft.Page):
                      bgcolor=ft.colors.BROWN_100,
                      alignment=ft.alignment.bottom_center,
                      ink=True,
-                     on_click=lambda e: restart_suggestion(e),
+                     on_click=lambda e, mab_instance=mab_instance: restart_suggestion(e, mab_instance),
                   ),
                   logout_button_container,
                ],
@@ -293,7 +288,7 @@ def main(page: ft.Page):
          return feedback_container
       
    # get end suggestion container (last scene):
-   def get_ending_container(feedback):
+   def get_ending_container(feedback, mab_instance):
       if feedback == -1:
          ending_message = "Oops... Looks like you didn't like all the activities we just gave you.\n\nWe will add more options, please come back next time!"
       elif feedback <= 3:
@@ -321,7 +316,7 @@ def main(page: ft.Page):
                   border_radius=20,
                   alignment=ft.alignment.center,
                   ink=True,
-                  on_click=lambda e: restart_suggestion(e),
+                  on_click=lambda e, mab_instance=mab_instance: restart_suggestion(e, mab_instance),
                ),
                ft.Container(
                   content=ft.Text('Logout', size=18, color=ft.colors.BLACK, font_family='Tahoma', text_align='CENTER'),
@@ -349,48 +344,49 @@ def main(page: ft.Page):
    # on-click functions:
    # --------------------------------------------------------------------------------------------------------------------
    # gets the context of which the user clicked, then remove the context selection widget, add first round suggestions:
-   def select_context(e, context):
+   def select_context(e, context, mab_instance):
+      contexts = mab_instance.get_contexts()
       # get context index:
       context_index = contexts.index(context)
       # removes the entire context widget, update page, then add suggestion control widget:
       page.controls.pop()
       # get first round suggestions:
       prev_sugg_indices = []
-      page.add(get_suggestion_container(context_index, prev_sugg_indices))
+      page.add(get_suggestion_container(context_index, prev_sugg_indices, mab_instance))
       page.update()
 
    # gets the suggestion of which the user clicked:
-   def select_suggestion(e, suggestion, context_index, prev_sugg_indices):
+   def select_suggestion(e, suggestion, context_index, prev_sugg_indices, mab_instance):
       if suggestion == 'Something Else':
          # remove old control:
          page.controls.pop()
-         suggestion_container = get_suggestion_container(context_index, prev_sugg_indices)
+         suggestion_container = get_suggestion_container(context_index, prev_sugg_indices, mab_instance)
          if suggestion_container == "Failed to suggest":
-            page.add(get_feedback_container(context_index, -1, prev_sugg_indices))
+            page.add(get_feedback_container(context_index, -1, prev_sugg_indices, mab_instance))
          else:
             page.add(suggestion_container)
       else:
          suggestion_index = mab_instance.get_suggestion_index(suggestion)
          page.controls.pop()
-         page.add(get_feedback_container(context_index, suggestion_index, prev_sugg_indices))
+         page.add(get_feedback_container(context_index, suggestion_index, prev_sugg_indices, mab_instance))
       # update page:
       page.update()
 
    # gets feedback:
-   def select_feedback(e, context_index, suggestion_index, feedback, prev_sugg_indices):
+   def select_feedback(e, context_index, suggestion_index, feedback, prev_sugg_indices, mab_instance):
       # update activity and mab data files:
       curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
       mab_instance.update_activity_log(curr_time, context_index, suggestion_index, feedback)
       mab_instance.update_mab_file(context_index, suggestion_index, feedback, prev_sugg_indices)
       # remove feedback container, add ending scene:
       page.controls.pop()
-      page.add(get_ending_container(feedback))
+      page.add(get_ending_container(feedback, mab_instance))
       page.update()
 
    # restart:
-   def restart_suggestion(e):
+   def restart_suggestion(e, mab_instance):
       page.controls.pop()
-      page.add(get_context_container())
+      page.add(get_context_container(mab_instance))
       page.update()
    # --------------------------------------------------------------------------------------------------------------------
 
