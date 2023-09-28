@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands, tasks
-import asyncio
 import os
 from dotenv import load_dotenv
 import datetime
@@ -13,9 +12,6 @@ BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 
 # Set thread section and interaction timeout duration:
 thread_section_duration = 60 * 24         # (mins & hours) e.g. 24 hours, 1 day
-context_section_duration = 900            # in seconds, e.g. 15 minutes
-suggestion_section_duration = 900         # in seconds, e.g. 15 minutes
-feedback_section_duration = 3600          # in seconds, e.g. 60 minutes
 
 # Enable the message_content intent
 intents = discord.Intents.all()
@@ -92,21 +88,19 @@ async def suggestion_thread_loop(ctx, task):
    await thread.send(message)
    
    # get context response from user:
-   try:
-      while True:
-         context_response = await bot.wait_for('message', check=check, timeout=context_section_duration) 
-         try:
-            context_index = int(context_response.content) - 1
-            if 0 <= context_index < len(contexts):
-               break
-            else:
-               await thread.send("Invalid context selection. Please enter a valid number.")
-         except ValueError:
-            await thread.send("Invalid input. Please enter numbers only.")
-   except asyncio.TimeoutError:
-      await thread.send("uh-oh! Activity was cancelled due to long time no response. See you next time!")
-      task.cancel()
-      return
+   while True:
+      context_response = await bot.wait_for('message', check=check) 
+      try:
+         context_index = int(context_response.content) - 1
+         if 0 <= context_index < len(contexts):
+            break
+         else:
+            await thread.send(f"Uh-oh...Please select a context with a number input from 1 to {len(contexts)}.")
+      except ValueError:
+         if context_response.content == "/suggest":
+            await thread.send("Please return to the main chat channel to start a new recommendation session.")
+         else:
+            await thread.send(f"Sorry we only accept numbers for context selection. Please select a context with a number input from 1 to {len(contexts)}.")
 
    # send suggestions and wait for user's reaction to suggestion
    first_round = True
@@ -139,21 +133,19 @@ async def suggestion_thread_loop(ctx, task):
          await thread.send(message)
 
       # get user response for recommendations:
-      try:
-         while True:
-            suggestion_response = await bot.wait_for('message', check=check, timeout=suggestion_section_duration)
-            try: 
-               sugg_idx = int(suggestion_response.content) - 1
-               if -1 <= sugg_idx < len(sugg_list):
-                  break
-               else:
-                  await thread.send("Invalid activity selection. Please enter a valid number.")
-            except ValueError:
-               await thread.send("Invalid input. Please enter numbers only.")
-      except asyncio.TimeoutError:
-         await thread.send("uh-oh! Activity was cancelled due to long time no response. See you next time!")
-         task.cancel()
-         return
+      while True:
+         suggestion_response = await bot.wait_for('message', check=check)
+         try: 
+            sugg_idx = int(suggestion_response.content) - 1
+            if -1 <= sugg_idx < len(sugg_list):
+               break
+            else:
+               await thread.send(f"Uh-oh...Please select an activity with a number input from 0 to {len(sugg_list)}.")
+         except ValueError:
+            if suggestion_response.content == "/suggest":
+               await thread.send("Please return to the main chat channel to start a new recommendation session.")
+            else:
+               await thread.send(f"Sorry we only accept numbers for activity selection. Please select an activity with a number input from 0 to {len(sugg_list)}.")
 
       if sugg_idx == -1:
          suggestion_index = -1
@@ -164,7 +156,7 @@ async def suggestion_thread_loop(ctx, task):
    # based on whether made a successful suggestion, behave properly:
    if fail_to_suggest:
       feedback_rating = -1
-      await thread.send("Oops... Looks like you didn't like all the activities we just gave you.\n\nWe will add more options, please come back next time!")
+      await thread.send("Oops...Looks like you didn't like all the activities we just gave you.\n\nWe will add more options, please come back next time!")
    else:
       # send instruction & image for activity and get user feedback:
       with open(mab_instance.get_suggestion_Image(suggestion_index), 'rb') as image_file:
@@ -175,24 +167,27 @@ async def suggestion_thread_loop(ctx, task):
       message += "\n\nTake your time! Once you are done, please provide a feedback from 0 (unhelpful) to 5 (out of this world) so we can better help you next time!"
       await thread.send(message)
    
-      try:
-         while True:
-            feedback_response = await bot.wait_for('message', check=check, timeout=feedback_section_duration)
-            try:
-               feedback_rating = int(feedback_response.content)
-               if 0 <= feedback_rating <= 5:
-                  break
-               else:
-                  await thread.send("Invalid feedback. Please enter a feedback from 0 ~ 5.")
-            except ValueError:
-               await thread.send("Invalid input. Please enter numbers only.")
-      except asyncio.TimeoutError:
-         await thread.send("uh-oh! Activity was cancelled due to long time no response. See you next time!")
-         task.cancel()
-         return
-
+      while True:
+         feedback_response = await bot.wait_for('message', check=check)
+         try:
+            feedback_rating = int(feedback_response.content)
+            if 0 <= feedback_rating <= 5:
+               break
+            else:
+               await thread.send("Uh-oh...Please give us a feedback from 0 to 5.")
+         except ValueError:
+            if feedback_response.content == "/suggest":
+               await thread.send("Please return to the main chat channel to start a new recommendation session.")
+            else:
+               await thread.send("Sorry we only accept numbers for feedback. Please give us a feedback from 0 to 5.")
+      
       # Last bot message for this thread:
-      await thread.send("Excellent! Hope you feel better after this activity! See you next time!")
+      if feedback_rating == 0:
+         await thread.send("Uh-oh... I'm sorry this activity isn't helpful to you. We will add more activities. Thank you for your time and patience.")
+      elif feedback_rating <= 3:
+         await thread.send("That's great! I'm glad you tried our activity. We will make further improvements. Until next time!")
+      else:
+         await thread.send("Excellent! I'm glad our activity helped. Have a nice day!")
 
       # update activity in both user's own activity history, and the total activity history
       curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

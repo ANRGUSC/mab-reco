@@ -291,10 +291,12 @@ def main(page: ft.Page):
    def get_ending_container(feedback, mab_instance):
       if feedback == -1:
          ending_message = "Oops... Looks like you didn't like all the activities we just gave you.\n\nWe will add more options, please come back next time!"
+      elif feedback == 0:
+         ending_message = "Uh-oh... I'm sorry this activity isn't helpful to you. We will add more activities. Thank you for your time and patience."
       elif feedback <= 3:
-         ending_message = "Thanks for your feedback! We will offer you something better next time!"
+         ending_message = "That's great! I'm glad you tried our activity. We will make further improvements. Until next time!"
       else:
-         ending_message = "Excellent! Hope you feel better after this activity! See you next time!"    
+         ending_message = "Excellent! I'm glad our activity helped. Have a nice day!"    
       # Get ending container:
       ending_container = ft.Container(
          content=ft.Column(

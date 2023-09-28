@@ -56,7 +56,13 @@ async def select_context(update: Update, context: CallbackContext) -> int:
       if context_index < 0 or context_index >= len(contexts):
          raise ValueError()
    except ValueError:
-      await update.message.reply_text(f"Invalid context selection. Please enter a valid context from 1 ~ {len(contexts)}.")
+      if context_response == "/suggest":
+         await update.message.reply_text('The current recommendation process is not finished yet. If you wish to start a new one, please call "/cancel" first before calling "/suggest".')
+      elif context_response == "/cancel":
+         await update.message.reply_text('The current recommendation process has been terminated. Feel free to start a new recommendation process by calling "/suggest" again.')
+         return ConversationHandler.END
+      else:
+         await update.message.reply_text(f"Uh-oh...Please select a context with a number input from 1 ~ {len(contexts)}.")
       return SELECT_CONTEXT
 
    # offer first list of suggestions: (suppose for first round, there is always some suggestions)
@@ -92,7 +98,13 @@ async def select_suggestion(update: Update, context: CallbackContext) -> int:
       if sugg_idx < -1 or sugg_idx >= len(sugg_list):
          raise ValueError()
    except ValueError:
-      await update.message.reply_text(f"Invalid suggestion selection. Please enter a valid suggestion from 0 ~ {len(sugg_list)}.")
+      if suggestion_response == "/suggest":
+         await update.message.reply_text('The current recommendation process is not finished yet. If you wish to start a new one, please call "/cancel" first before calling "/suggest".')
+      elif suggestion_response == "/cancel":
+         await update.message.reply_text('The current recommendation process has been terminated. Feel free to start a new recommendation process by calling "/suggest" again.')
+         return ConversationHandler.END
+      else:
+         await update.message.reply_text(f"Uh-oh...Please select an activity with a number input from 0 ~ {len(sugg_list)}.")
       return SELECT_SUGGESTION
 
    if sugg_idx == -1:
@@ -146,11 +158,22 @@ async def collect_feedback(update: Update, context: CallbackContext) -> int:
       if feedback_rating < 0 or feedback_rating > 5:
          raise ValueError()        
    except ValueError:
-      await update.message.reply_text("Invalid feedback. Please enter a feedback from 0 ~ 5.")
+      if feedback_response == "/suggest":
+         await update.message.reply_text('The current recommendation process is not finished yet. If you wish to start a new one, please call "/cancel" first before calling "/suggest".')
+      elif feedback_response == "/cancel":
+         await update.message.reply_text('The current recommendation process has been terminated. Feel free to start a new recommendation process by calling "/suggest" again.')
+         return ConversationHandler.END
+      else:
+         await update.message.reply_text("Uh-oh...Please provide a feedback with a number input from 0 ~ 5.")
       return COLLECT_FEEDBACK
    
    # last message:
-   await update.message.reply_text("Excellent! Hope you feel better after this activity! See you next time!")
+   if feedback_rating == 0:
+      await update.message.reply_text("Uh-oh... I'm sorry this activity isn't helpful to you. We will add more activities. Thank you for your time and patience.")
+   elif feedback_rating <= 3:
+      await update.message.reply_text("That's great! I'm glad you tried our activity. We will make further improvements. Until next time!")
+   else:
+      await update.message.reply_text("Excellent! I'm glad our activity helped. Have a nice day!")
    
    # update activity in both user's own activity history, and the total activity history
    curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -165,7 +188,7 @@ async def collect_feedback(update: Update, context: CallbackContext) -> int:
 
 # cancel suggest command:
 async def cancel(update: Update, context: CallbackContext) -> int:
-   await update.message.reply_text("/suggest command terminated. See you next time!")
+   await update.message.reply_text('The current recommendation process has been terminated. Feel free to start a new recommendation process by calling "/suggest" again.')
    return ConversationHandler.END
 
 # error handler:
@@ -185,9 +208,9 @@ def main():
    suggest_conversation_handler = ConversationHandler(
       entry_points=[CommandHandler('suggest', start_suggestion)],
       states={
-         SELECT_CONTEXT: [MessageHandler(filters.TEXT & ~ filters.COMMAND, select_context)],
-         SELECT_SUGGESTION: [MessageHandler(filters.TEXT & ~ filters.COMMAND, select_suggestion)],
-         COLLECT_FEEDBACK: [MessageHandler(filters.TEXT & ~ filters.COMMAND, collect_feedback)]
+         SELECT_CONTEXT: [MessageHandler(filters.TEXT, select_context)],
+         SELECT_SUGGESTION: [MessageHandler(filters.TEXT, select_suggestion)],
+         COLLECT_FEEDBACK: [MessageHandler(filters.TEXT, collect_feedback)]
       },
       fallbacks=[CommandHandler('cancel', cancel)]
    )
