@@ -12,10 +12,6 @@ load_dotenv()
 GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
 
-# Define Flet path:
-FLET_PATH = os.getenv("FLET_PATH", 'mabrecopwa')
-FLET_PORT = int(os.getenv("FLET_PORT", 5000))
-
 # The main function to start the app:
 def main(page: ft.Page):
    # page configurations, center content, hide scrollbar, etc.
@@ -398,4 +394,4 @@ def main(page: ft.Page):
 
 # run the app:
 if __name__ == "__main__":
-   ft.app(name=FLET_PATH, target=main, view=None, port=FLET_PORT)
+   ft.app(target=main, view=ft.WEB_BROWSER, port=5000)
