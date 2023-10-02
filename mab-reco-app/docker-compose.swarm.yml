@@ -1,0 +1,28 @@
+version: '3'
+services:
+  mabreco:
+    image: mabreco
+    build: .
+    networks:
+      - traefik_proxy
+    environment:
+      - PREFIX=/mabreco
+    # command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+    # command: uvicorn main:app --host 0.0.0.0 --port 5000 
+    command: flet run . --port 5000 --web
+    volumes:
+      - .env:/app/.env
+    deploy:
+      labels:
+        - "traefik.port=5000"
+        - "traefik.backend=mabreco"
+        - "traefik.frontend.rule=PathPrefix:/"
+        # - "traefik.http.middlewares.test-stripprefix.stripprefix.prefixes=/mabreco"
+
+      placement:
+        constraints:
+          - node.role == manager
+
+networks:
+  traefik_proxy:
+    external: true

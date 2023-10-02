@@ -393,4 +393,4 @@ def main(page: ft.Page):
    # --------------------------------------------------------------------------------------------------------------------
 
 # run the app:
-ft.app(target=main, port=3000, view=ft.WEB_BROWSER)
+app = ft.app(target=main, port=5000, view=ft.WEB_BROWSER)
