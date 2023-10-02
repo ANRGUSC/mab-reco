@@ -12,6 +12,10 @@ load_dotenv()
 GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
 
+# Define Flet path:
+FLET_PATH = os.getenv("FLET_PATH", 'mabrecopwa')
+FLET_PORT = int(os.getenv("FLET_PORT", 8502))
+
 # The main function to start the app:
 def main(page: ft.Page):
    # page configurations, center content, hide scrollbar, etc.
@@ -26,7 +30,7 @@ def main(page: ft.Page):
    provider = GitHubOAuthProvider(
       client_id=GITHUB_CLIENT_ID,
       client_secret=GITHUB_CLIENT_SECRET,
-      redirect_url="http://localhost:3000/api/oauth/redirect",
+      redirect_url="https://eclipse.usc.edu/mabrecopwa/api/oauth/redirect",
    )
 
    # when login button is clicked:
@@ -42,7 +46,7 @@ def main(page: ft.Page):
       # global mab_instance, contexts, suggestions
       if not e.error:
          user_id = page.auth.user.id
-         print("User ID:", page.auth.user.id)
+         # print("User ID:", page.auth.user.id)
          # Create a hash object (SHA-512)
          hash_object = hashlib.sha256()
          hash_object.update(user_id.encode())
@@ -393,4 +397,5 @@ def main(page: ft.Page):
    # --------------------------------------------------------------------------------------------------------------------
 
 # run the app:
-ft.app(target=main, port=3000, view=ft.WEB_BROWSER)
+if __name__ == "__main__":
+   ft.app(name=FLET_PATH, target=main, view=None, port=FLET_PORT)
