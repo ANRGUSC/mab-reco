@@ -30,7 +30,7 @@ def main(page: ft.Page):
    provider = GitHubOAuthProvider(
       client_id=GITHUB_CLIENT_ID,
       client_secret=GITHUB_CLIENT_SECRET,
-      redirect_url="https://eclipse.usc.edu/mabrecopwa/api/oauth/redirect",
+      redirect_url="https://eclipse.usc.edu/api/oauth/redirect",
    )
 
    # when login button is clicked:
