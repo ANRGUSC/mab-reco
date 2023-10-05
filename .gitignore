@@ -36,3 +36,6 @@
 
 # .env files:
 .env
+
+# test files:
+test_db.py
