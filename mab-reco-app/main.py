@@ -34,7 +34,8 @@ def main(page: ft.Page):
       page.login(provider)
 
    # when logout in button is clicked:
-   def logout_click(e):
+   def logout_click(e, mab_instance):
+      mab_instance.close_db_connection()
       page.logout()
 
    # upon login:
@@ -79,17 +80,6 @@ def main(page: ft.Page):
       padding=30
    )
 
-   # Logout button:
-   logout_button_container = ft.Container(
-      content=ft.Text('Logout', size=17, color=ft.colors.BLACK, font_family='Tahoma', text_align='CENTER'),
-      margin=10,
-      padding=10,
-      bgcolor=ft.colors.BROWN_100,
-      alignment=ft.alignment.bottom_center,
-      ink=True,
-      on_click=lambda e: logout_click(e),
-   )
-
    # add login_button:
    page.on_login = on_login
    page.on_logout = on_logout
@@ -130,7 +120,15 @@ def main(page: ft.Page):
                      context_options
                   ),
                ),
-               logout_button_container,
+               ft.Container(
+                  content=ft.Text('Logout', size=17, color=ft.colors.BLACK, font_family='Tahoma', text_align='CENTER'),
+                  margin=10,
+                  padding=10,
+                  bgcolor=ft.colors.BROWN_100,
+                  alignment=ft.alignment.bottom_center,
+                  ink=True,
+                  on_click=lambda e, mab_instance=mab_instance: logout_click(e, mab_instance),
+               ),
             ],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -199,7 +197,15 @@ def main(page: ft.Page):
                      ink=True,
                      on_click=lambda e, mab_instance=mab_instance: restart_suggestion(e, mab_instance),
                   ),
-                  logout_button_container,
+                  ft.Container(
+                     content=ft.Text('Logout', size=17, color=ft.colors.BLACK, font_family='Tahoma', text_align='CENTER'),
+                     margin=10,
+                     padding=10,
+                     bgcolor=ft.colors.BROWN_100,
+                     alignment=ft.alignment.bottom_center,
+                     ink=True,
+                     on_click=lambda e, mab_instance=mab_instance: logout_click(e, mab_instance),
+                  ),
                ],
                alignment=ft.MainAxisAlignment.CENTER,
                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -276,7 +282,15 @@ def main(page: ft.Page):
                      ink=True,
                      on_click=lambda e, mab_instance=mab_instance: restart_suggestion(e, mab_instance),
                   ),
-                  logout_button_container,
+                  ft.Container(
+                     content=ft.Text('Logout', size=17, color=ft.colors.BLACK, font_family='Tahoma', text_align='CENTER'),
+                     margin=10,
+                     padding=10,
+                     bgcolor=ft.colors.BROWN_100,
+                     alignment=ft.alignment.bottom_center,
+                     ink=True,
+                     on_click=lambda e, mab_instance=mab_instance: logout_click(e, mab_instance),
+                  ),
                ],
                alignment=ft.MainAxisAlignment.CENTER,
                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -330,7 +344,7 @@ def main(page: ft.Page):
                   border_radius=20,
                   alignment=ft.alignment.center,
                   ink=True,
-                  on_click=lambda e: logout_click(e),
+                  on_click=lambda e, mab_instance=mab_instance: logout_click(e, mab_instance),
                ),
             ],
             alignment=ft.MainAxisAlignment.CENTER,
