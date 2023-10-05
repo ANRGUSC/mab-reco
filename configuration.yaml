@@ -63,13 +63,11 @@ avoid_indices:
 - [1, 5]
 
 # folder names for files:
-user_activity_folder_name: user_activities
-mab_data_folder_name: mab_data
 image_folder_name: images
-history_mab_data_file_name: history_data.txt
-history_activity_file_name: history_activity.json
+general_data_platform: total_data
+general_data_user_hash: total
 
 # modify the non-selected suggestions:
-modify_non_selected: true    # this can be set as "true" or "false", turn on or off the feature of modifying the non-selected suggestions rewards
+modify_non_selected: false   # this can be set as "true" or "false", turn on or off the feature of modifying the non-selected suggestions rewards
 threshold_num: 1000          # if you decide to turn on this feature, feature not enabled until total data points exceed this threshold
 auxiliary_rewards: 0.5       # if you decide to turn on this feature, rewards to add to those suggested but not selected suggestions (can be negative depending on use cases)

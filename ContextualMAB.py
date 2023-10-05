@@ -37,10 +37,11 @@ class ContextualMAB:
          # records total number of selections so far
          self.total_selections = 0
       else:
-         self.rewards = np.array(self.user_documents['mab_data']['rewards'])
-         self.selections = np.array(self.user_documents['mab_data']['selections'])
-         self.mab_scores = np.array(self.user_documents['mab_data']['mab_scores'], dtype=object)
-         self.total_selections = self.user_documents['mab_data']['total_selections']
+         self.mab_data = self.user_documents.get('mab_data', {})
+         self.rewards = np.array(self.mab_data.get('rewards', np.zeros((num_suggestions, num_contexts))))
+         self.selections = np.array(self.mab_data.get('selections', np.zeros((num_suggestions, num_contexts))))
+         self.mab_scores = np.array(self.mab_data.get('mab_scores', np.full((num_suggestions, num_contexts), float('inf'))), dtype=object)
+         self.total_selections = self.mab_data.get('total_selections', 0)
 
    # Recommend the top rec_size suggestions based on given context:
    def recommend(self, rec_size, context_index, first_time, avoid_indices=None):
@@ -123,7 +124,7 @@ class ContextualMAB:
          upsert=True           # Create a new document if one doesn't exist
       )
 
-   # update user log history:
+   # update activity data in database:
    def update_activity(self, activity_entry):
       self.collection.find_one_and_update(
          {'user_id': self.user_hash},

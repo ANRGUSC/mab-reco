@@ -199,5 +199,8 @@ async def suggestion_thread_loop(ctx, task):
    # update data & history data file:
    mab_instance.update_mab_file(context_index, suggestion_index, feedback_rating, prev_sugg_indices)
 
+   # close database connection:
+   mab_instance.close_db_connection()
+
 # Run the bot:
 bot.run(BOT_TOKEN)

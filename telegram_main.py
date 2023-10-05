@@ -116,6 +116,8 @@ async def select_suggestion(update: Update, context: CallbackContext) -> int:
          feedback_rating = -1
          suggestion_index = -1
          mab_instance.update_mab_file(context_index, suggestion_index, feedback_rating, prev_sugg_indices)
+         # close database connection:
+         mab_instance.close_db_connection()
          return ConversationHandler.END
       else:
          # show new list of suggestions:
@@ -181,7 +183,8 @@ async def collect_feedback(update: Update, context: CallbackContext) -> int:
    
    # update mab data files:
    mab_instance.update_mab_file(context_index, suggestion_index, feedback_rating, prev_sugg_indices)
-
+   # close database connection:
+   mab_instance.close_db_connection()
    # end command:
    return ConversationHandler.END
 # ---------------------------------------------------------------------------------------------------------------------------
