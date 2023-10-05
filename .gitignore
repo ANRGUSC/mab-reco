@@ -35,4 +35,4 @@
 *.pyc
 
 # .env files:
-*.env
+.env
