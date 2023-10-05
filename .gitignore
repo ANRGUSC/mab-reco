@@ -33,3 +33,6 @@
 
 # python cache files:
 *.pyc
+
+# .env files:
+*.env
