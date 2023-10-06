@@ -7,4 +7,4 @@ services:
       - .env:/app/.env
     ports:
       - "5000:5000"
-    command: flet run --port 5000 --web .
+    command: flet run . --port 5000 --web
