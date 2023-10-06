@@ -27,6 +27,7 @@ def main(page: ft.Page):
       client_id=GITHUB_CLIENT_ID,
       client_secret=GITHUB_CLIENT_SECRET,
       redirect_url="https://eclipse.usc.edu/api/oauth/redirect",
+      # redirect_url="http://localhost:5000/api/oauth/redirect",
    )
 
    # when login button is clicked:
@@ -51,6 +52,7 @@ def main(page: ft.Page):
          # Update mab_instance with user hash:
          mab_instance = MABInstance(user_hash, True, 'pwa')
          # remove login button, and add context selection:
+         print("Here")
          page.controls.pop()
          page.add(get_context_container(mab_instance))
          page.update()
