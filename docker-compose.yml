@@ -1,0 +1,23 @@
+version: '3'
+services:
+  mab-reco-discord: 
+    image: mab-reco
+    build: .
+    volumes:
+      - .env:/app/.env
+    command: python discord_main.py
+  mab-reco-telegram: 
+    image: mab-reco
+    build: .
+    volumes:
+      - .env:/app/.env
+    command: python telegram_main.py
+  mab-reco-web: 
+    image: mab-reco
+    build: .
+    volumes:
+      - ./mab-reco-app/.env:/app/mab-reco-app/.env
+    ports:
+      - "5000:5000"
+    working_dir: /app/mab-reco-app
+    command: flet run . --port 5000 --web
