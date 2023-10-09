@@ -1,5 +1,6 @@
 import flet as ft
 import datetime
+import pytz
 import numpy as np
 import hashlib
 from MABInstance import MABInstance
@@ -394,7 +395,10 @@ def main(page: ft.Page):
    # gets feedback:
    def select_feedback(e, context_index, suggestion_index, feedback, prev_sugg_indices, mab_instance):
       # update activity and mab data files:
-      curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+      utc_now = datetime.datetime.utcnow()
+      pacific = pytz.timezone('US/Pacific')
+      pdt_now = pacific.fromutc(utc_now)
+      curr_time = pdt_now.strftime("%Y-%m-%d %H:%M:%S")
       mab_instance.update_activity_log(curr_time, context_index, suggestion_index, feedback)
       mab_instance.update_mab_file(context_index, suggestion_index, feedback, prev_sugg_indices)
       # remove feedback container, add ending scene:

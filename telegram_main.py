@@ -3,6 +3,7 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Conv
 import os
 from dotenv import load_dotenv
 import datetime
+import pytz
 import numpy as np
 from MABInstance import MABInstance
 
@@ -178,7 +179,10 @@ async def collect_feedback(update: Update, context: CallbackContext) -> int:
       await update.message.reply_text("Excellent! I'm glad our activity helped. Have a nice day!")
    
    # update activity in both user's own activity history, and the total activity history
-   curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+   utc_now = datetime.datetime.utcnow()
+   pacific = pytz.timezone('US/Pacific')
+   pdt_now = pacific.fromutc(utc_now)
+   curr_time = pdt_now.strftime("%Y-%m-%d %H:%M:%S")
    mab_instance.update_activity_log(curr_time, context_index, suggestion_index, feedback_rating)
    
    # update mab data files:

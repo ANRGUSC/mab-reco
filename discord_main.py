@@ -3,6 +3,7 @@ from discord.ext import commands, tasks
 import os
 from dotenv import load_dotenv
 import datetime
+import pytz
 import numpy as np
 from MABInstance import MABInstance
 
@@ -59,7 +60,10 @@ def command_generator(ctx):
 # suggest thread loop:
 async def suggestion_thread_loop(ctx, task):
    # create thread for the user:
-   curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+   utc_now = datetime.datetime.utcnow()
+   pacific = pytz.timezone('US/Pacific')
+   pdt_now = pacific.fromutc(utc_now)
+   curr_time = pdt_now.strftime("%Y-%m-%d %H:%M")
    thread = await ctx.channel.create_thread(
       name = f"{curr_time}: Recommendation channel for <{ctx.author.display_name}>",
       auto_archive_duration = thread_section_duration
@@ -190,7 +194,10 @@ async def suggestion_thread_loop(ctx, task):
          await thread.send("Excellent! I'm glad our activity helped. Have a nice day!")
 
       # update activity in both user's own activity history, and the total activity history
-      curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+      utc_now = datetime.datetime.utcnow()
+      pacific = pytz.timezone('US/Pacific')
+      pdt_now = pacific.fromutc(utc_now)
+      curr_time = pdt_now.strftime("%Y-%m-%d %H:%M:%S")
       mab_instance.update_activity_log(curr_time, context_index, suggestion_index, feedback_rating)
 
    # cancel task:
