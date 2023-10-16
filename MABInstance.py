@@ -19,6 +19,14 @@ modify_non_selected = data["modify_non_selected"]
 threshold_num = data["threshold_num"]
 auxiliary_rewards = data["auxiliary_rewards"]
 
+# cluster feature:
+enable_cluster = data["enable_cluster"]
+cluster_refresh_threshold = data["cluster_refresh_threshold"]
+cluster_reco_ratio = data["cluster_reco_ratio"]    
+mab_reco_ratio = data["mab_reco_ratio"]            
+assign_cluster_num = data["assign_cluster_num"]  
+recluster_threshold = data["recluster_threshold"]  
+
 # Name file paths:
 image_folder_path = os.path.join(os.getcwd(), data["image_folder_name"])
 general_data_platform = data["general_data_platform"]
@@ -36,12 +44,32 @@ class MABInstance:
       self.image_folder_path = image_folder_path
       # initiate total and user mab instances:
       if modify_non_selected:
-         self.general_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, general_data_platform, general_data_user_hash, threshold_num, auxiliary_rewards)
-         self.user_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, self.platform, self.user_hash, threshold_num, auxiliary_rewards)
+         self.general_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, 
+                                                   general_data_platform, general_data_user_hash, threshold_num, auxiliary_rewards,
+                                                   enable_cluster, cluster_reco_ratio, mab_reco_ratio, cluster_refresh_threshold, 
+                                                   assign_cluster_num, recluster_threshold)
+         self.user_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, 
+                                                self.platform, self.user_hash, threshold_num, auxiliary_rewards,
+                                                enable_cluster, cluster_reco_ratio, mab_reco_ratio, cluster_refresh_threshold, 
+                                                assign_cluster_num, recluster_threshold)
       else:
-         self.general_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, general_data_platform, general_data_user_hash)
-         self.user_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, self.platform, self.user_hash)
-      
+         self.general_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, 
+                                                   general_data_platform, general_data_user_hash,
+                                                   enable_cluster=enable_cluster,
+                                                   cluster_reco_ratio=cluster_reco_ratio, 
+                                                   mab_reco_ratio=mab_reco_ratio, 
+                                                   cluster_refresh_threshold=cluster_refresh_threshold, 
+                                                   assign_cluster_num=assign_cluster_num,
+                                                   recluster_threshold=recluster_threshold)
+         self.user_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, 
+                                                self.platform, self.user_hash,
+                                                enable_cluster=enable_cluster,
+                                                cluster_reco_ratio=cluster_reco_ratio, 
+                                                mab_reco_ratio=mab_reco_ratio, 
+                                                cluster_refresh_threshold=cluster_refresh_threshold, 
+                                                assign_cluster_num=assign_cluster_num,
+                                                recluster_threshold=recluster_threshold)
+
    # Returns the contexts:
    def get_contexts(self):
       return contexts
@@ -86,11 +114,31 @@ class MABInstance:
       self.user_mab_instance.close_db()
       # re-create mab instances due to concurrency to avoid any issues:
       if modify_non_selected:
-         self.general_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, general_data_platform, general_data_user_hash, threshold_num, auxiliary_rewards)
-         self.user_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, self.platform, self.user_hash, threshold_num, auxiliary_rewards)
+         self.general_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, 
+                                                   general_data_platform, general_data_user_hash, threshold_num, auxiliary_rewards,
+                                                   enable_cluster, cluster_reco_ratio, mab_reco_ratio, cluster_refresh_threshold, 
+                                                   assign_cluster_num, recluster_threshold)
+         self.user_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, 
+                                                self.platform, self.user_hash, threshold_num, auxiliary_rewards,
+                                                enable_cluster, cluster_reco_ratio, mab_reco_ratio, cluster_refresh_threshold, 
+                                                assign_cluster_num, recluster_threshold)
       else:
-         self.general_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, general_data_platform, general_data_user_hash)
-         self.user_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, self.platform, self.user_hash)
+         self.general_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, 
+                                                   general_data_platform, general_data_user_hash,
+                                                   enable_cluster=enable_cluster,
+                                                   cluster_reco_ratio=cluster_reco_ratio, 
+                                                   mab_reco_ratio=mab_reco_ratio, 
+                                                   cluster_refresh_threshold=cluster_refresh_threshold, 
+                                                   assign_cluster_num=assign_cluster_num,
+                                                   recluster_threshold=recluster_threshold)
+         self.user_mab_instance = ContextualMAB(len(suggestions), len(contexts), 2, 
+                                                self.platform, self.user_hash,
+                                                enable_cluster=enable_cluster,
+                                                cluster_reco_ratio=cluster_reco_ratio, 
+                                                mab_reco_ratio=mab_reco_ratio, 
+                                                cluster_refresh_threshold=cluster_refresh_threshold, 
+                                                assign_cluster_num=assign_cluster_num,
+                                                recluster_threshold=recluster_threshold)
       # update accordingly:
       if modify_non_selected:
          for i in range(len(suggestion_idx_list)):

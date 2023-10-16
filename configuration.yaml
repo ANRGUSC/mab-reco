@@ -71,3 +71,11 @@ general_data_user_hash: total
 modify_non_selected: false   # this can be set as "true" or "false", turn on or off the feature of modifying the non-selected suggestions rewards
 threshold_num: 1000          # if you decide to turn on this feature, feature not enabled until total data points exceed this threshold
 auxiliary_rewards: 0.5       # if you decide to turn on this feature, rewards to add to those suggested but not selected suggestions (can be negative depending on use cases)
+
+# clustering feature:
+enable_cluster: true             # enable cluster feature on or off
+cluster_refresh_threshold: 10    # re-cluster after this number of user selections
+cluster_reco_ratio: 0.5          # when making recommendation, ratio for cluster (preference vector)
+mab_reco_ratio: 0.5              # when making recommendation, ratio for original mab scores
+assign_cluster_num: 5            # for new user, after the user made this number of selections, assign to cluster
+recluster_threshold: 100         # only re-clustering using k-mean once total selections exceed this threshold
