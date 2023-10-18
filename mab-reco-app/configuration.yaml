@@ -78,4 +78,4 @@ cluster_refresh_threshold: 10    # re-cluster after this number of user selectio
 cluster_reco_ratio: 0.5          # when making recommendation, ratio for cluster (preference vector)
 mab_reco_ratio: 0.5              # when making recommendation, ratio for original mab scores
 assign_cluster_num: 5            # for new user, after the user made this number of selections, assign to cluster
-recluster_threshold: 100         # only re-clustering using k-mean once total selections exceed this threshold
+recluster_threshold: 30          # only re-clustering using k-mean once total selections exceed this threshold
