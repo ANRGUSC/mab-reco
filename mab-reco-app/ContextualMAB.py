@@ -59,10 +59,72 @@ class ContextualMAB:
             if self.total_selections >= self.assign_cluster_num:
                self.user_cluster_id = self.user_cluster_data.get('cluster_id', f'cluster_{np.random.randint(0, CLUSTER_SIZE)}')
             self.pref_vector = np.array(self.user_cluster_data.get('pref_vector', np.zeros((num_suggestions, num_contexts))))
+            # check if the pref. vector is in the correct dimension:
+            self.check_user_pref_vector()
       # get cluster info:
       if self.enable_cluster:
          self.cluster_collection = self.db['total_data']
          self.cluster_documents = self.cluster_collection.find_one({'user_id': 'total'})
+         self.cluster_data = self.cluster_documents.get('cluster_data', {})
+         # check if the cluster pref. vector is in the correct dimension:
+         self.check_cluster_data()
+
+   # modify user pref vector in case of dimension change:
+   def check_user_pref_vector(self):
+      curr_row, curr_column = self.pref_vector.shape
+      if curr_row == self.num_suggestions and curr_column == self.num_contexts:
+         return
+      else:
+         # expand or shrink rows:
+         if curr_row < self.num_suggestions:
+            extra_rows = np.zeros((self.num_suggestions - curr_row, curr_column))
+            self.pref_vector = np.vstack((self.pref_vector, extra_rows))
+         elif curr_row > self.num_suggestions:
+            self.pref_vector = self.pref_vector[:self.num_suggestions, :]
+
+         # expand or shrink columns:
+         if curr_column < self.num_contexts:
+            extra_cols = np.zeros((self.num_suggestions, self.num_contexts - curr_column))
+            self.pref_vector = np.hstack((self.pref_vector, extra_cols))
+         elif curr_column > self.num_contexts:
+            self.pref_vector = self.pref_vector[:, :self.num_contexts]
+   
+   # modify cluster pref vectors in case of dimension change:
+   def check_cluster_data(self):
+      changed = False
+      for i in range(CLUSTER_SIZE):
+         curr_cluster_data = np.array(self.cluster_data.get(f'cluster_{i}', np.zeros((self.num_suggestions, self.num_contexts))))
+         curr_row, curr_column = curr_cluster_data.shape
+         if curr_row == self.num_suggestions and curr_column == self.num_contexts:
+            continue
+         else:
+            changed = True
+            # expand or shrink rows:
+            if curr_row < self.num_suggestions:
+               extra_rows = np.random.rand(self.num_suggestions - curr_row, curr_column) * 5
+               curr_cluster_data = np.vstack((curr_cluster_data, extra_rows))
+            elif curr_row > self.num_suggestions:
+               curr_cluster_data = curr_cluster_data[:self.num_suggestions, :]
+
+            # expand or shrink columns:
+            if curr_column < self.num_contexts:
+               extra_cols = np.random.rand(self.num_suggestions, self.num_contexts - curr_column) * 5
+               curr_cluster_data = np.hstack((curr_cluster_data, extra_cols))
+            elif curr_column > self.num_contexts:
+               curr_cluster_data = curr_cluster_data[:, :self.num_contexts]
+
+            # update this in database:
+            curr_cluster_data_list = curr_cluster_data.tolist()
+            self.cluster_collection.find_one_and_update(
+               {'user_id': 'total'},
+               {'$set': {
+                     f'cluster_data.cluster_{i}': curr_cluster_data_list,
+               }},
+               return_document=True, # Return the updated document
+               upsert=True           # Create a new document if one doesn't exist
+            )
+      # if changed any:
+      if changed:
          self.cluster_data = self.cluster_documents.get('cluster_data', {})
 
    # Recommend the top rec_size suggestions based on given context:
