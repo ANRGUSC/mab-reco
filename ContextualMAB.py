@@ -10,6 +10,7 @@ load_dotenv()
 DB_CONNECTION_STRING = os.getenv("DB_CONNECTION_STRING")
 DB_NAME = os.getenv("DB_NAME")
 CLUSTER_SIZE = 5
+RATIO_DIFF = 0.1 # Bigger positive value implies more weight on the cluster data when making recommendations, note 'cluster_reco_ratio/mab_reco_ratio +/- RATIO_DIFF' should be in range [0.0, 1.0]
 
 class ContextualMAB:
    # By default, we won't modify the non-selected suggestions after the "threshold_num" total selections, just omit the last two parameters.
@@ -140,7 +141,7 @@ class ContextualMAB:
          if self.total_selections >= self.assign_cluster_num:
             user_cluster_data = np.array(self.cluster_data.get(self.user_cluster_id, np.zeros((self.num_suggestions, self.num_contexts))))
             context_user_cluster_data = user_cluster_data[:, context_index]
-            reco_scores = self.mab_reco_ratio * context_mab_scores + self.cluster_reco_ratio * context_user_cluster_data
+            reco_scores = (self.mab_reco_ratio - RATIO_DIFF) * context_mab_scores + (self.cluster_reco_ratio + RATIO_DIFF) * context_user_cluster_data
          else:
             reco_scores = self.mab_reco_ratio * context_mab_scores + self.cluster_reco_ratio * context_pref_vector
 
