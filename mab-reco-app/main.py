@@ -45,7 +45,7 @@ def main(page: ft.Page):
       # global mab_instance, contexts, suggestions
       if not e.error:
          user_id = page.auth.user.id
-         print("User ID:", page.auth.user.id)
+         # print("User ID:", page.auth.user.id)
          # Create a hash object (SHA-512)
          hash_object = hashlib.sha256()
          hash_object.update(user_id.encode())
@@ -415,4 +415,4 @@ def main(page: ft.Page):
 
 # run the app:
 if __name__ == "__main__":
-   ft.app(name='mab-reco', target=main, view=ft.WEB_BROWSER, port=5000)
+   ft.app(name="/mabreco", target=main, view=ft.WEB_BROWSER, port=5000)
