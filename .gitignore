@@ -28,8 +28,8 @@
 *.tar.gz
 *.rar
 
-# data log files
-*.txt
+# # data log files
+# *.txt
 
 # python cache files:
 *.pyc
