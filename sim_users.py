@@ -2,6 +2,12 @@ import numpy as np
 from MABInstance import MABInstance
 import datetime
 import pytz
+import os
+from dotenv import load_dotenv
+from pymongo import MongoClient
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 PLATFORM = "discord"
 USER_HASH_PREFIX = "sim_"
@@ -873,5 +879,57 @@ def genenrate_user_data(num_sample, config_dict, context_range, user_id, platfor
         print(f'Current loop: {i}')
 
 if __name__ == "__main__":
-    for i in range(22, 25):
-        genenrate_user_data(NUM_SAMPLES, user_configs[i], user_contexts[i], i + 1, PLATFORM)
+    # run simulation from a range of users:
+    # for i in range(0, 25):
+    #     genenrate_user_data(NUM_SAMPLES, user_configs[i], user_contexts[i], i + 1, PLATFORM)
+    
+    # get data:
+    load_dotenv()
+    DB_CONNECTION_STRING = os.getenv("DB_CONNECTION_STRING")
+    DB_NAME = os.getenv("DB_NAME")
+    db_client = MongoClient(DB_CONNECTION_STRING)
+    db = db_client[DB_NAME]
+    collection = db[PLATFORM]
+    sim_data = {}  # store simulation data
+    for i in range(0, 25):
+        curr_user = f'sim_{i + 1}'
+        user_documents = collection.find_one({'user_id': curr_user})
+        curr_value = {'cluster': user_documents['cluster_data']['cluster_id'], 'selection_count': user_documents['mab_data']['total_selections']}
+        sim_data[curr_user] = curr_value
+    
+    # modify the data to what I actually observe:
+    sim_data['sim_23']['selection_count'] = 55
+    sim_data['sim_24']['selection_count'] = 58
+    sim_data['sim_25']['selection_count'] = 57
+    
+    # generate graph to visualize data:
+    # print(sim_data)
+    # Create a DataFrame from the dictionary for easier data manipulation
+    data = pd.DataFrame(sim_data).T
+
+    # Create a color map for the clusters
+    colors = {
+        'cluster_0': 'blue',
+        'cluster_1': 'green',
+        'cluster_2': 'red',
+        'cluster_3': 'purple',
+        'cluster_4': 'orange'
+    }
+
+    # Create handles and labels for the legend
+    legend_handles = [mpatches.Patch(color=color, label=cluster) for cluster, color in colors.items()]
+
+    # Plot individual bars for each user
+    for user, user_data in data.iterrows():
+        plt.bar(user, user_data['selection_count'], color=colors[user_data['cluster']])
+
+    plt.xlabel('Users')
+    plt.ylabel('Selection Count')
+    plt.title('User Selection Count with Cluster Colors')
+    plt.xticks(rotation=45, ha="right")  # Rotate x-axis labels for better readability
+    # Add a legend in the upper right corner
+    plt.legend(handles=legend_handles, loc='upper right')
+    plt.show()
+
+    # close db connection:
+    db_client.close()
