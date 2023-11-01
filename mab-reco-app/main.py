@@ -7,11 +7,18 @@ from MABInstance import MABInstance
 from flet.auth.providers import GitHubOAuthProvider
 from dotenv import load_dotenv
 import os
+import logging
+
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 
 # Get client ID and client secret:
 load_dotenv()
 GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
+
+REDIRECT_URL = os.getenv("REDIRECT_URL", "http://localhost:5000/api/oauth/redirect")
 
 # The main function to start the app:
 def main(page: ft.Page):
@@ -27,8 +34,7 @@ def main(page: ft.Page):
    provider = GitHubOAuthProvider(
       client_id=GITHUB_CLIENT_ID,
       client_secret=GITHUB_CLIENT_SECRET,
-      # redirect_url="https://eclipse.usc.edu/api/oauth/redirect",
-      redirect_url="http://localhost:5000/api/oauth/redirect",
+      redirect_url=REDIRECT_URL,
    )
 
    # when login button is clicked:
@@ -413,6 +419,9 @@ def main(page: ft.Page):
       page.update()
    # --------------------------------------------------------------------------------------------------------------------
 
-# run the app:
-if __name__ == "__main__":
-   ft.app(name="/mabreco", target=main, view=ft.WEB_BROWSER, port=5000)
+# # run the app:
+# if __name__ == "__main__":
+#    ft.app(
+#       # name="/mabreco",
+#       target=main, view=ft.WEB_BROWSER, port=5000
+#    )

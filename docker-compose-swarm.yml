@@ -1,0 +1,41 @@
+version: '3'
+services:
+  # mab-reco-discord: 
+  #   image: mab-reco
+  #   build: .
+  #   volumes:
+  #     - .env:/app/.env
+  #   command: python discord_main.py
+  # mab-reco-telegram: 
+  #   image: mab-reco
+  #   build: .
+  #   volumes:
+  #     - .env:/app/.env
+  #   command: python telegram_main.py
+  mab-reco-web: 
+    image: mab-reco
+    build: .
+    volumes:
+      - ./mab-reco-app/.env:/app/mab-reco-app/.env
+    environment:
+      - REDIRECT_URL=https://eclipse.usc.edu/api/oauth/redirect
+      - PYTHONUNBUFFERED=1
+      - FLET_LOG_LEVEL=DEBUG
+    working_dir: /app/mab-reco-app
+    command: flet run . --port 5000 --web -vv
+    
+    networks:
+      - traefik_proxy
+    deploy:
+      labels:
+        - "traefik.port=5000"
+        - "traefik.backend=mab-reco-web"
+        - "traefik.frontend.rule=HostRegexp:eclipse.usc.edu"
+        - "traefik.docker.network=traefik_proxy"
+      placement:
+        constraints:
+          - node.role == manager
+    
+networks:
+  traefik_proxy:
+    external: true

@@ -17,7 +17,6 @@ services:
         - "traefik.port=5000"
         - "traefik.backend=mabreco"
         - "traefik.frontend.rule=PathPrefix:/"
-        # - "traefik.http.middlewares.test-stripprefix.stripprefix.prefixes=/mabreco"
 
       placement:
         constraints:
