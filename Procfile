@@ -1,1 +1,1 @@
-flet run . --port 443 --web
+flet run . --port 80 --web
