@@ -1,1 +1,1 @@
-flet run . --port 80 --web
+web: python ./mab-reco-app/main.py

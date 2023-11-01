@@ -419,9 +419,9 @@ def main(page: ft.Page):
       page.update()
    # --------------------------------------------------------------------------------------------------------------------
 
-# # run the app:
-# if __name__ == "__main__":
-#    ft.app(
-#       # name="/mabreco",
-#       target=main, view=ft.WEB_BROWSER, port=5000
-#    )
+# run the app:
+if __name__ == "__main__":
+   ft.app(
+      # name="/mabreco",
+      target=main, view=ft.WEB_BROWSER, port=os.getenv("PORT")
+   )
