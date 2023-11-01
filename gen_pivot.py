@@ -17,7 +17,21 @@ collection = db['total_data']
 user_documents = collection.find_one({'user_id': 'total'})
 
 for i in range(CLUSTER_SIZE):
-    matrix = 5 * np.random.rand(rows, columns)
+    # if i == 0:
+    #     matrix = 5 * np.random.rand(rows, columns)
+    # elif i == 1:
+    #     matrix = np.zeros((rows, columns))
+    #     matrix[:, 0] = 5 * np.random.rand(rows)
+    # elif i == 2:
+    #     matrix = np.zeros((rows, columns))
+    #     matrix[:, 1] = 5 * np.random.rand(rows)
+    #     matrix[:, 3] = 5 * np.random.rand(rows)
+    #     matrix[:, 5] = 5 * np.random.rand(rows)
+    # elif i == 3:
+    #     matrix = 2.5 + np.random.rand(rows, columns) * (3.5 - 2.5)
+    # else:
+    #     matrix = 4.5 + np.random.rand(rows, columns) * (5.0 - 4.5)
+    matrix = matrix = 5 * np.random.rand(rows, columns)
     matrix_list = matrix.tolist()
     collection.find_one_and_update(
         {'user_id': 'total'},
@@ -27,6 +41,30 @@ for i in range(CLUSTER_SIZE):
         return_document=True, # Return the updated document
         upsert=True           # Create a new document if one doesn't exist
     )
+
+
+
+# # matrix = np.zeros((rows, columns))
+# # matrix[:, 0] = 5 * np.random.rand(rows)
+
+# # matrix = np.zeros((rows, columns))
+# # matrix[:, 1] = 5 * np.random.rand(rows)
+# # matrix[:, 3] = 5 * np.random.rand(rows)
+# # matrix[:, 5] = 5 * np.random.rand(rows)
+
+# # matrix = 2.5 + np.random.rand(rows, columns) * (3.5 - 2.5)
+#     # else:
+# matrix = 4.5 + np.random.rand(rows, columns) * (5.0 - 4.5)
+    
+# matrix_list = matrix.tolist()
+# collection.find_one_and_update(
+#     {'user_id': 'total'},
+#     {'$set': {
+#         f'cluster_data.cluster_4': matrix_list,
+#     }},
+#     return_document=True, # Return the updated document
+#     upsert=True           # Create a new document if one doesn't exist
+# )
 
 
 db_client.close()
