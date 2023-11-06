@@ -341,6 +341,10 @@ class ContextualMAB:
    
    # check the current data and see if we can consider the pick is the first time:
    def is_first_time(self, context_index, reco_size):
+      # If clustering is enabled, do not give suggestions randomly:
+      if self.enable_cluster:
+         return False
+      # If clustering is off:
       context_selections = self.selections[:, context_index]
       if self.total_selections == 0 or np.sum(context_selections) < reco_size:
          return True
