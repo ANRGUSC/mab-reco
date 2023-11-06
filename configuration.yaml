@@ -10,48 +10,49 @@ contexts:
 - During Travel
 
 suggestions:
-- Deep Breathing
-- Quick Walk
-- Listen to Music
-- Stretching
-- Mini Meditation
-- Hug a Pillow
-- Count Your Blessings
-- Savor a Snack
-- Memory Lane
-- Drink Something
+- Mindful Deep Breathing
+- Take a Mindful Quick Walk
+- Engage in Mindful Music Listening
+- Practice Mindful Stretching
+- Engage in a Mindful Mini Meditation
+- Give Yourself a Mindful Hug with a Pillow
+- Engage in Mindful Counting of Your Blessings
+- Mindfully Savor a Snack
+- Take a Mindful Stroll Down Memory Lane
+- Enjoy a Mindful Beverage
 
+# Be sure to make the img_file_name as <suggestion.png> format:
 sugg_dict:
-  Deep Breathing:
+  Mindful Deep Breathing:
     description: Take slow, deep breaths. Inhale for a count of 4, hold for 4, exhale for 4. Repeat a few times.
-    img_file_name: Deep Breathing.png
-  Quick Walk:
+    img_file_name: Mindful Deep Breathing.png
+  Take a Mindful Quick Walk:
     description: Step outside for a short walk around your surroundings. Breathe in fresh air and observe your surroundings.
-    img_file_name: Quick Walk.png
-  Listen to Music:
+    img_file_name: Take a Mindful Quick Walk.png
+  Engage in Mindful Music Listening:
     description: Put on a favorite calming song or instrumental music and immerse yourself in the sound.
-    img_file_name: Listen to Music.png
-  Stretching:
+    img_file_name: Engage in Mindful Music Listening.png
+  Practice Mindful Stretching:
     description: Do a few simple stretches to loosen tense muscles, like touching your toes or rolling your shoulders.
-    img_file_name: Stretching.png
-  Mini Meditation:
+    img_file_name: Practice Mindful Stretching.png
+  Engage in a Mindful Mini Meditation:
     description: Find a quiet spot, close your eyes, and concentrate on your breath or a peaceful image for a few minutes.
-    img_file_name: Mini Meditation.png
-  Hug a Pillow:
+    img_file_name: Engage in a Mindful Mini Meditation.png
+  Give Yourself a Mindful Hug with a Pillow:
     description: Hug a pillow tightly for a comforting sensation and to release tension.
-    img_file_name: Hug a Pillow.png
-  Count Your Blessings:
+    img_file_name: Give Yourself a Mindful Hug with a Pillow.png
+  Engage in Mindful Counting of Your Blessings:
     description: List three things that went well today and why.
-    img_file_name: Count Your Blessings.png
-  Savor a Snack:
+    img_file_name: Engage in Mindful Counting of Your Blessings.png
+  Mindfully Savor a Snack:
     description: Grab a small, delicious snack, you deserve it.
-    img_file_name: Savor a Snack.png
-  Memory Lane:
+    img_file_name: Mindfully Savor a Snack.png
+  Take a Mindful Stroll Down Memory Lane:
     description: Reminisce about positive memories to evoke happy feelings.
-    img_file_name: Memory Lane.png
-  Drink Something:
+    img_file_name: Take a Mindful Stroll Down Memory Lane.png
+  Enjoy a Mindful Beverage:
     description: Drink some water or whatever you like.
-    img_file_name: Drink Something.png
+    img_file_name: Enjoy a Mindful Beverage.png
 
 # for all contexts, this records which suggestions to avoid
 avoid_indices:
