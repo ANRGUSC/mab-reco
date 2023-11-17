@@ -10,8 +10,6 @@ contexts:
 - During Travel
 
 suggestions:
-- STOP
-- HALT
 - Mindful Deep Breathing
 - Take a Mindful Walk
 - Engage in Mindful Music Listening
@@ -22,21 +20,17 @@ suggestions:
 - Savor a Snack Mindfully
 - Take a Mindful Stroll Down Memory Lane
 - Enjoy a Beverage Mindfully
+- STOP
+- HALT
 
 # Be sure to make the img_file_name as <suggestion.png> format:
 sugg_dict:
-  STOP:
-    description: Stop, Take a breath, Observe, and Proceed.
-    img_file_name: 
-  HALT:
-    description: HALT and check in with yourself: Are you feeling Hungry, Angry, Lonely, or Tired?
-    img_file_name: 
   Mindful Deep Breathing:
     description: Take slow, deep breaths. Inhale for a count of 4, hold for 4, exhale for 4. Repeat a few times.
     img_file_name: Mindful Deep Breathing.png
   Take a Mindful Walk:
     description: Step outside for a short walk around your surroundings. Breathe in fresh air and observe your surroundings.
-    img_file_name: Take a Mindful Quick Walk.png
+    img_file_name: Take a Mindful Walk.png
   Engage in Mindful Music Listening:
     description: Put on your favorite calming song or instrumental music and immerse yourself in the sound.
     img_file_name: Engage in Mindful Music Listening.png
@@ -51,16 +45,22 @@ sugg_dict:
     img_file_name: Give Yourself a Mindful Hug with a Pillow.png
   Count Your Blessings:
     description: List three things that went well today and why. Feel the gratitude from the bottom of your heart. Good things always happen for you!
-    img_file_name: Engage in Mindful Counting of Your Blessings.png
+    img_file_name: Count Your Blessings.png
   Savor a Snack Mindfully:
     description: Grab a small, delicious snack. You deserve it. Savor the snack and pay attention to the texture, the taste, the smell, and fully enjoy the moment.
-    img_file_name: Mindfully Savor a Snack.png
+    img_file_name: Savor a Snack Mindfully.png
   Take a Mindful Stroll Down Memory Lane:
     description: Reminisce about positive memories to evoke happy feelings. What are some happy memories that bring you smiles? Feel the gratitude towards those memories.
     img_file_name: Take a Mindful Stroll Down Memory Lane.png
   Enjoy a Beverage Mindfully:
     description: Drink some water or whatever you like. Water is magic in our lives! Without it, we can no longer be alive. Feel the gratitude towards your beverage that brings you energy and life!
-    img_file_name: Enjoy a Mindful Beverage.png
+    img_file_name: Enjoy a Beverage Mindfully.png
+  STOP:
+    description: Stop, Take a breath, Observe, and Proceed.
+    img_file_name: STOP.png
+  HALT:
+    description: "HALT and check in with yourself: Are you feeling Hungry, Angry, Lonely, or Tired?"
+    img_file_name: HALT.png
 
 # for all contexts, this records which suggestions to avoid
 avoid_indices:

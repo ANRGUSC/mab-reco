@@ -11,48 +11,56 @@ contexts:
 
 suggestions:
 - Mindful Deep Breathing
-- Take a Mindful Quick Walk
+- Take a Mindful Walk
 - Engage in Mindful Music Listening
 - Practice Mindful Stretching
 - Engage in a Mindful Mini Meditation
 - Give Yourself a Mindful Hug with a Pillow
-- Engage in Mindful Counting of Your Blessings
-- Mindfully Savor a Snack
+- Count Your Blessings
+- Savor a Snack Mindfully
 - Take a Mindful Stroll Down Memory Lane
-- Enjoy a Mindful Beverage
+- Enjoy a Beverage Mindfully
+- STOP
+- HALT
 
 # Be sure to make the img_file_name as <suggestion.png> format:
 sugg_dict:
   Mindful Deep Breathing:
     description: Take slow, deep breaths. Inhale for a count of 4, hold for 4, exhale for 4. Repeat a few times.
     img_file_name: Mindful Deep Breathing.png
-  Take a Mindful Quick Walk:
+  Take a Mindful Walk:
     description: Step outside for a short walk around your surroundings. Breathe in fresh air and observe your surroundings.
-    img_file_name: Take a Mindful Quick Walk.png
+    img_file_name: Take a Mindful Walk.png
   Engage in Mindful Music Listening:
-    description: Put on a favorite calming song or instrumental music and immerse yourself in the sound.
+    description: Put on your favorite calming song or instrumental music and immerse yourself in the sound.
     img_file_name: Engage in Mindful Music Listening.png
   Practice Mindful Stretching:
-    description: Do a few simple stretches to loosen tense muscles, like touching your toes or rolling your shoulders.
+    description: Scan your body and pay attention to where there is tension. Do a few simple stretches to loosen tense muscles, like touching your toes or rolling your shoulders.
     img_file_name: Practice Mindful Stretching.png
   Engage in a Mindful Mini Meditation:
-    description: Find a quiet spot, close your eyes, and concentrate on your breath or a peaceful image for a few minutes.
+    description: Find a quiet spot, close your eyes, and concentrate on your breath or an image that can bring you joy for a few minutes, such as a puppy/kitten, beautiful nature, or a happy baby.
     img_file_name: Engage in a Mindful Mini Meditation.png
   Give Yourself a Mindful Hug with a Pillow:
-    description: Hug a pillow tightly for a comforting sensation and to release tension.
+    description: Hug a pillow tightly for a comforting sensation and then release tension. Pay attention to how your body feels before and afterward. You deserve a hug!
     img_file_name: Give Yourself a Mindful Hug with a Pillow.png
-  Engage in Mindful Counting of Your Blessings:
-    description: List three things that went well today and why.
-    img_file_name: Engage in Mindful Counting of Your Blessings.png
-  Mindfully Savor a Snack:
-    description: Grab a small, delicious snack, you deserve it.
-    img_file_name: Mindfully Savor a Snack.png
+  Count Your Blessings:
+    description: List three things that went well today and why. Feel the gratitude from the bottom of your heart. Good things always happen for you!
+    img_file_name: Count Your Blessings.png
+  Savor a Snack Mindfully:
+    description: Grab a small, delicious snack. You deserve it. Savor the snack and pay attention to the texture, the taste, the smell, and fully enjoy the moment.
+    img_file_name: Savor a Snack Mindfully.png
   Take a Mindful Stroll Down Memory Lane:
-    description: Reminisce about positive memories to evoke happy feelings.
+    description: Reminisce about positive memories to evoke happy feelings. What are some happy memories that bring you smiles? Feel the gratitude towards those memories.
     img_file_name: Take a Mindful Stroll Down Memory Lane.png
-  Enjoy a Mindful Beverage:
-    description: Drink some water or whatever you like.
-    img_file_name: Enjoy a Mindful Beverage.png
+  Enjoy a Beverage Mindfully:
+    description: Drink some water or whatever you like. Water is magic in our lives! Without it, we can no longer be alive. Feel the gratitude towards your beverage that brings you energy and life!
+    img_file_name: Enjoy a Beverage Mindfully.png
+  STOP:
+    description: Stop, Take a breath, Observe, and Proceed.
+    img_file_name: STOP.png
+  HALT:
+    description: "HALT and check in with yourself: Are you feeling Hungry, Angry, Lonely, or Tired?"
+    img_file_name: HALT.png
 
 # for all contexts, this records which suggestions to avoid
 avoid_indices:
@@ -79,4 +87,4 @@ cluster_refresh_threshold: 10    # re-cluster after this number of user selectio
 cluster_reco_ratio: 0.5          # when making recommendation, ratio for cluster (preference vector)
 mab_reco_ratio: 0.5              # when making recommendation, ratio for original mab scores
 assign_cluster_num: 5            # for new user, after the user made this number of selections, assign to cluster
-recluster_threshold: 30          # only re-clustering using k-mean once total selections exceed this threshold
+recluster_threshold: 30         # only re-clustering using k-mean once total selections exceed this threshold
