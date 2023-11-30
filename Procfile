@@ -1,1 +1,0 @@
-web: python ./mab-reco-app/main.py

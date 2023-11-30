@@ -1,3 +1,8 @@
+# This is the main program to activate the telegram bot, to change the bot with your own bot, simply change the telegram bot
+# token and telegram bot username in the .env file. For more details, please ask for chatGPT and visit online tutorials.
+
+# For test run or run this in a docker image, please take a look at the docker-compose.yml or docker-compose-swarm.yml
+
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler, filters, CallbackContext, ContextTypes
 import os
@@ -22,10 +27,10 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ---------------------------------------------------------------------------------------------------------------------------
 # /suggest command
-# define states
+# define states (can think states as different parts of the whole user interaction)
 SELECT_CONTEXT, SELECT_SUGGESTION, COLLECT_FEEDBACK = range(3)
 
-# start /suggest command
+# start /suggest command, ask user about what context they are in and proceed to the next screen with suggestions:
 async def start_suggestion(update: Update, context: CallbackContext):
    user = update.message.from_user
    user_hash_code = user.id

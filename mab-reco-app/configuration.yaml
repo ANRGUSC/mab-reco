@@ -1,4 +1,4 @@
-# how many recommendations to give
+# how many recommendations to give, please make sure this size is no bigger than the total of suggestions number:
 recommendation_size: 3
 
 contexts:
@@ -23,7 +23,7 @@ suggestions:
 - STOP
 - HALT
 
-# Be sure to make the img_file_name as <suggestion.png> format:
+# Be sure to make the img_file_name as <suggestion.png> format, e.g. for suggestion "STOP", you should name your png file as "STOP.png"
 sugg_dict:
   Mindful Deep Breathing:
     description: Take slow, deep breaths. Inhale for a count of 4, hold for 4, exhale for 4. Repeat a few times.
@@ -62,7 +62,7 @@ sugg_dict:
     description: "HALT and check in with yourself: Are you feeling Hungry, Angry, Lonely, or Tired?"
     img_file_name: HALT.png
 
-# for all contexts, this records which suggestions to avoid
+# for different contexts, this records which suggestions to avoid
 avoid_indices:
 - [5]
 - [1, 4, 5]
@@ -87,4 +87,4 @@ cluster_refresh_threshold: 10    # re-cluster after this number of user selectio
 cluster_reco_ratio: 0.5          # when making recommendation, ratio for cluster (preference vector)
 mab_reco_ratio: 0.5              # when making recommendation, ratio for original mab scores
 assign_cluster_num: 5            # for new user, after the user made this number of selections, assign to cluster
-recluster_threshold: 30         # only re-clustering using k-mean once total selections exceed this threshold
+recluster_threshold: 30          # only re-clustering using k-mean once total selections exceed this threshold

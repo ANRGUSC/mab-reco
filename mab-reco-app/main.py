@@ -1,3 +1,8 @@
+# This is the main program to activate the PWA app, to change the github Oauth with your own, simply change the github client id and secret
+# in the .env file. For more details, please ask for chatGPT and visit online tutorials. For flet, please visit https://flet.dev/ for reference.
+
+# For test run or run this in a docker image, please take a look at the docker-compose.yml or docker-compose-swarm.yml
+
 import flet as ft
 import datetime
 import pytz

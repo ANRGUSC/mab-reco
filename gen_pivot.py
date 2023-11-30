@@ -1,3 +1,7 @@
+# This is the document to generate pivots for different clusters. You can customize your own way of the pivots you wish to generate.
+# The current code is an example to generate random pivots (center of the cluster). 
+# The code utilize mongoDB Atlas, please update the db information with your own for testing.
+
 import numpy as np
 import os
 from dotenv import load_dotenv
@@ -42,8 +46,7 @@ for i in range(CLUSTER_SIZE):
         upsert=True           # Create a new document if one doesn't exist
     )
 
-
-
+# Some sample code for references only:----------------------------------------------
 # # matrix = np.zeros((rows, columns))
 # # matrix[:, 0] = 5 * np.random.rand(rows)
 
@@ -67,4 +70,5 @@ for i in range(CLUSTER_SIZE):
 # )
 
 
+# Please remeber close connection with the database:
 db_client.close()

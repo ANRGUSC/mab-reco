@@ -1,3 +1,6 @@
+# This is a sample code on how to generate simulated users (fake users) for model testing. The code is an example to generate
+# simulated users with a certain behavior pattern followed by the Gaussain's Distribution (normal distribution).
+
 import numpy as np
 from MABInstance import MABInstance
 import datetime
@@ -9,6 +12,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
+# We have three platforms for now, in here for testing purpose, I store all simulated user data all in the discord folder.
 PLATFORM = "discord"
 USER_HASH_PREFIX = "sim_"
 NUM_SAMPLES = 50

@@ -1,3 +1,8 @@
+# This is the main program to activate the discord bot, to change the bot with your own bot, simply change the discord bot
+# token in the .env file. For more details, please ask for chatGPT and visit online tutorials.
+
+# For test run or run this in a docker image, please take a look at the docker-compose.yml or docker-compose-swarm.yml
+
 import discord
 from discord.ext import commands, tasks
 import os
